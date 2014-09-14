@@ -1,0 +1,13 @@
+{
+    "_id" : "Gluster-3.4.2.1",
+    "productName" : "Gluster",
+    "productOptions" : [{
+        "key" : "nodecount",
+        "label" : "Number of gluster nodes to build",
+        "optionType" : "string",
+        "defaultValue" : "2",
+        "enumeration" : ["2"]
+    }],
+    "productVersion" : "3.4.2.1",
+    "repoUrl" : "http://<products-server>/scope-products/Gluster-3.4.2.1/"
+}
