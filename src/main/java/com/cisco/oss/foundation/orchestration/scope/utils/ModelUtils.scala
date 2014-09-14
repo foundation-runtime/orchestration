@@ -149,8 +149,7 @@ object ModelUtils extends Slf4jLogger {
                         }
                         case None => {
                           role.puppet.get.script += "include " + module.asInstanceOf[PuppetModule].name + "\n"
-                          //TODO: remove nds_
-                          role.puppet.get.configuration += (module.asInstanceOf[PuppetModule].name.replace("nds_", "") + "::version" -> module.asInstanceOf[PuppetModule].version)
+                          role.puppet.get.configuration += (module.asInstanceOf[PuppetModule].name + "::version" -> module.asInstanceOf[PuppetModule].version)
                           module.asInstanceOf[PuppetModule].file match {
                             case Some(ccp) => {
                               ccp.additionalValues.foreach(parameter => {
