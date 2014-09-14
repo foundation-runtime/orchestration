@@ -1,0 +1,157 @@
+# Copyright 2014 Cisco Systems, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+#===============================================================================
+# NAME:			generic_post_install
+#	
+# AUTHOR:		D Singleton, U Volovich
+# 
+# VERSION:		1.2
+# 
+# PURPOSE:		RPM post install script to create necessary symbolic links
+#
+# COMPATIBILITY: RHEL5, VGH3 and above
+#
+# HISTORY:		Updated to allow the creation of multiple init.d links for multiple processes				
+#
+#===============================================================================
+
+
+# * * * * * Generic post install script * * * *#
+
+setJversion(){
+  javaHome=`rpm -qa | grep %{name}-%{version}-%{release} | xargs -iARG rpm -q --requires ARG | egrep "^jdk" | awk -F\= 'BEGIN{javaHome="";} {if($1 ~ /jdk64/){javaHome="java64";}else{javaHome="java";}} END{if(NR > 1){javaHome="";} print javaHome;}'`
+  if [ X"$javaHome" == X ]; then
+      echo "Failed to discover what a JDK is required. Failed to create ${APP_JAVA_LNK}. Please create link manually"
+      return 1
+  fi
+  JVERSION="/usr/$javaHome/%{javaVersionDir}"
+  return 0
+}
+
+
+RPMPREFIX=$RPM_INSTALL_PREFIX
+APPNAME=%{software_name}
+APPVERSION=%{software_version}
+APPUSER=%{software_user_id}
+APPGROUP=%{software_group_id}
+
+# * * * * * User configurable values * * * *#
+CISCOLOGPATH=/var/log/cisco
+APPLOGPATH=/var/log/cisco/%{software_name}
+
+createActiveVersionLink=%{createActiveVersionLink}
+ACTIVE_VERSION_LNK=${RPMPREFIX}/${APPNAME}
+ACTIVE_VERSION_TRGT=${RPMPREFIX}/installed/${APPNAME}-${APPVERSION}
+
+createConfigLink=%{createConfigLink}
+APP_CONFIG_PATH=/etc${RPMPREFIX}
+APP_CONFIG_LNK=/etc${RPMPREFIX}/${APPNAME}
+APP_CONFIG_TRGT=${RPMPREFIX}/${APPNAME}/etc
+
+createLogLink=%{createLogLink}
+LOG_LNK=${RPMPREFIX}/installed/${APPNAME}-${APPVERSION}/log
+LOG_TRGT=${APPLOGPATH}
+
+createInitdLink=%{createInitdLink}
+INITD_LNK=/etc/init.d
+INITD_TRGT=${RPMPREFIX}/${APPNAME}/utils
+
+createJavaVersionLink=%{createJavaVersionLink}
+APP_JAVA_LNK=${RPMPREFIX}/installed/${APPNAME}-${APPVERSION}/bin/java_${APPNAME}
+
+# * * * * * Main script do not edit* * * *#
+if [ "$1" == "1" ]; then
+	if [ ${createActiveVersionLink} -eq 1 ]; then
+		if [ -h ${ACTIVE_VERSION_LNK} ]; then	
+			echo "The active version link ${ACTIVE_VERSION_LNK} exists and has not been altered. Please alter link manually."
+		else
+			ln -s ${ACTIVE_VERSION_TRGT} ${ACTIVE_VERSION_LNK}
+			if [ ! -h ${ACTIVE_VERSION_LNK} ]; then
+				echo "Failed to create ${ACTIVE_VERSION_LNK}. Please create link manually."
+			else
+				chown -h ${APPUSER}:${APPGROUP} ${ACTIVE_VERSION_LNK} > /dev/null
+			fi
+			if [ ${createConfigLink} -eq 1 ]; then
+				if [ -d ${APP_CONFIG_PATH} ];then
+					:
+				else
+					mkdir -p ${APP_CONFIG_PATH}
+					chown -h ${APPUSER}:${APPGROUP} ${APP_CONFIG_PATH} > /dev/null
+				fi
+				if [ -h ${APP_CONFIG_LNK} ]; then
+					echo "The config location link ${APP_CONFIG_LNK} exists and has not been altered. Please alter link manually."
+				else
+					ln -s ${APP_CONFIG_TRGT} ${APP_CONFIG_LNK}
+					if [ ! -h ${APP_CONFIG_LNK} ]; then
+						echo "Failed to create ${APP_CONFIG_LNK}. Please create link manually."
+					else
+						chown -h ${APPUSER}:${APPGROUP} ${APP_CONFIG_LNK} > /dev/null
+					fi
+				fi
+			fi
+
+			if [ ${createInitdLink} -eq 1 ]; then
+				for  initScriptFullPath in `grep -l "NDS Generic Init Script" ${RPMPREFIX}/${APPNAME}/utils/*`
+				do
+					initScript=`basename ${initScriptFullPath}`
+					if [ -h ${INITD_LNK}/${initScript} ]; then
+						echo "The initd link ${INITD_LNK}/${initScript} exists and has not been altered. Please alter link manually."
+					else
+						ln -s ${INITD_TRGT}/${initScript} ${INITD_LNK}/${initScript}
+						if [ ! -h ${INITD_LNK}/${initScript} ]; then
+							echo "Failed to create ${INITD_LNK}/${initScript}. Please create link manually."
+						fi
+					fi
+				done
+			fi
+		fi
+	fi #end createActiveLink
+else
+	echo "Not the first install of this component. Active, Config and Init linking should be altered manually."
+fi
+
+if [ ${createLogLink} -eq 1 ]; then
+	if [ -d ${APPLOGPATH} ]; then
+		if [ -h ${LOG_LNK} ]; then
+			echo "The logging link ${LOG_LNK} exists and has not been altered. Please alter link manually."
+		else
+			ln -s ${LOG_TRGT} ${LOG_LNK}
+			if [ ! -h ${LOG_LNK} ]; then
+				echo "Failed to create ${LOG_LNK}. Please create link manually."
+			else
+				chown -h ${APPUSER}:${APPGROUP} ${LOG_LNK} > /dev/null
+			fi
+		fi
+	else
+		echo "The logging path ${APPLOGPATH} does not exist. Failed to create ${LOG_LNK}. Please create link manually."
+	fi
+fi
+
+if [ ${createJavaVersionLink} -eq 1 ]; then
+	if [ -h ${APP_JAVA_LNK} ]; then
+		echo "The Java link ${APP_JAVA_LNK} exists and has not been altered. Please alter link manually."
+	else
+                setJversion
+                if [ "$?" -eq 0 ]; then 
+                  APP_JAVA_TRGT=${JVERSION}/bin/java
+		  ln -s ${APP_JAVA_TRGT} ${APP_JAVA_LNK}
+		  if [ ! -h ${APP_JAVA_LNK} ]; then
+			echo "Failed to create ${APP_JAVA_LNK}. Please create link manually."
+		  else
+			chown -h ${APPUSER}:${APPGROUP} ${APP_JAVA_LNK} > /dev/null
+		  fi
+		fi
+	fi
+fi
