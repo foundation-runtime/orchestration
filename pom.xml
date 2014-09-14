@@ -573,6 +573,23 @@
                                     <filemode>0755</filemode>
                                 </mapping>
                                 <mapping>
+                                    <directory>/opt/cisco/scopeData</directory>
+                                    <username>${rpmUsername}</username>
+                                    <groupname>${rpmGroupname}</groupname>
+                                    <filemode>0755</filemode>
+                                </mapping>
+                                <mapping>
+                                    <directory>/opt/cisco/scopeData/products</directory>
+                                    <username>${rpmUsername}</username>
+                                    <groupname>${rpmGroupname}</groupname>
+                                    <filemode>0755</filemode>
+                                    <sources>
+                                        <source>
+                                            <location>src/main/rpm/products/Gluster-3.4.2.1</location>
+                                        </source>
+                                    </sources>
+                                </mapping>
+                                <mapping>
                                     <directory>/opt/cisco/scopeData/scope-base/5/x86_64</directory>
                                     <username>${rpmUsername}</username>
                                     <groupname>${rpmGroupname}</groupname>
