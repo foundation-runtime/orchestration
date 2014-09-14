@@ -16,17 +16,15 @@
 
 package com.cisco.oss.foundation.orchestration.scope.vmware
 
-import org.junit.Test
-import com.vmware.vim25.mo._
 import java.net.URL
+
+import com.cisco.oss.foundation.orchestration.scope.model.Module
+import com.cisco.oss.foundation.orchestration.scope.utils.ScopeUtils
 import com.vmware.vim25._
-import java.lang.String
-import org.jclouds.route53.xml.GetHostedZoneResponseHandler
+import com.vmware.vim25.mo._
+import org.junit.Test
+
 import scala.Predef._
-import com.cisco.oss.foundation.orchestration.scope.vmware.G
-import com.cisco.oss.foundation.orchestration.scope.vmware.H
-import com.cisco.oss.foundation.orchestration.utils.ScopeUtils
-import com.cisco.oss.foundation.orchestration.model.Module
 
 /**
  * Created with IntelliJ IDEA.
@@ -174,7 +172,7 @@ class VMWareTest {
     val vmFolder = dc.getVmFolder()
     val newConfig = new VirtualMachineConfigSpec()
     newConfig.setNumCPUs(4)
-    newConfig.setMemoryMB(4000)
+    newConfig.setMemoryMB(4000l)
     newConfig.setDeviceChange(Array(net0,net1))
     //newConfig.setNetworkShaper(networkShaper)
 
@@ -283,29 +281,3 @@ class VMWareTest {
 
   }
 }
-
-
-import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
-import com.fasterxml.jackson.annotation.JsonSubTypes.Type
-
-
-@JsonTypeInfo(
-  use = JsonTypeInfo.Id.NAME,
-  include = JsonTypeInfo.As.PROPERTY,
-  property = "type")
-@JsonSubTypes( Array (
-  new Type(value = classOf[G], name = "puppet"),
-  new Type(value = classOf[H], name = "plugin")
-)                     )
-trait FFF {
-  val `type` : String = "puppet"
-  val name: String = ""
-  val version: String = ""
-}
-
-case class G( val ccp: String, val length: Int) extends FFF
-case class H( val size: Int, val value: Option[String]) extends FFF
-
-
-
-

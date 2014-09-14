@@ -670,14 +670,26 @@
                                     <username>${rpmUsername}</username>
                                     <groupname>${rpmGroupname}</groupname>
                                     <filemode>0755</filemode>
-                                    <sources>
+                                    <!--<sources>
                                         <source>
                                             <location>src/main/rpm/plugins/CCPComponentInstallation.scala</location>
+                                        </source>
+                                    </sources>-->
+                                </mapping>
+                                <mapping>
+                                    <directory>/opt/cisco/installed/${rpmSoftwareName}-${project.version}/bin
+                                    </directory>
+                                    <username>${rpmUsername}</username>
+                                    <groupname>${rpmGroupname}</groupname>
+                                    <filemode>0755</filemode>
+                                    <sources>
+                                        <source>
+                                            <location>src/main/rpm/ui</location>
                                         </source>
                                     </sources>
                                 </mapping>
                                 <mapping>
-                                    <directory>/opt/cisco/installed/${rpmSoftwareName}-${project.version}/bin
+                                    <directory>/opt/cisco/installed/${rpmSoftwareName}-${project.version}/ui
                                     </directory>
                                     <username>${rpmUsername}</username>
                                     <groupname>${rpmGroupname}</groupname>

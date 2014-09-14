@@ -21,7 +21,7 @@ import com.mongodb.{MongoClient, Mongo}
 import com.novus.salat._
 import com.novus.salat.global._
 import com.mongodb.casbah.Imports._
-import com.cisco.oss.foundation.orchestration.model.{System, ScopeNodeMetadata}
+import com.cisco.oss.foundation.orchestration.scope.model.{System, ScopeNodeMetadata}
 import scala.collection.immutable.Map
 
 /**
