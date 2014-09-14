@@ -7,4 +7,4 @@ set CP
 
 set PATH=.;..\lib;%PATH%
 
-java -classpath %CP% com.cisco.oss.foundation.orchestration.main.RunScope
+java -classpath %CP% com.cisco.oss.foundation.orchestration.scope.main.RunScope

@@ -32,7 +32,7 @@
     </mvc:annotation-driven>
 
 
-    <bean id="mapper" class="com.cisco.oss.foundation.orchestration.model.ObjectMapperFactory"/>
+    <bean id="mapper" class="com.cisco.oss.foundation.orchestration.scope.model.ObjectMapperFactory"/>
 
     <context:annotation-config/>
     <context:property-placeholder location="classpath:config.properties"/>
@@ -40,13 +40,13 @@
     <bean class="com.mangofactory.swagger.configuration.DocumentationConfig"/>
 
     <bean id="componentInstallationImpl"
-          class="${service.scope.componentInstallationImpl:com.cisco.oss.foundation.orchestration.configuration.MockComponentInstallationImpl}"/>
+          class="${service.scope.componentInstallationImpl:com.cisco.oss.foundation.orchestration.scope.configuration.MockComponentInstallationImpl}"/>
 
 
     <bean id="pluginSourceDirectory" class="java.io.File">
         <constructor-arg type="java.lang.String" value="${plugins.directory:/opt/cisco/scope/plugins}"/>
     </bean>
-    <bean id="scriptEngine" class="com.cisco.oss.foundation.orchestration.scripting.ScalaScriptEngineWrapper">
+    <bean id="scriptEngine" class="com.cisco.oss.foundation.orchestration.scope.scripting.ScalaScriptEngineWrapper">
         <constructor-arg name="sourceDirectory" ref="pluginSourceDirectory"/>
     </bean>
 

@@ -17,7 +17,7 @@
 package com.cisco.oss.foundation.orchestration.scope.jclouds
 
 import com.google.common.util.concurrent.MoreExecutors.sameThreadExecutor;
-import com.cisco.oss.foundation.orchestration.utils._
+import com.cisco.oss.foundation.orchestration.scope.utils._
 import org.scalatest.junit.{MustMatchersForJUnit, ShouldMatchersForJUnit, JUnitSuite}
 import org.junit.Test
 import org.jclouds.ContextBuilder

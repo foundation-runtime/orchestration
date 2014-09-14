@@ -18,7 +18,7 @@ package com.cisco.oss.foundation.orchestration.scope.scripting.scala
 
 import java.io.File
 
-import com.cisco.oss.foundation.orchestration.scripting.ScalaScriptEngineWrapper
+import com.cisco.oss.foundation.orchestration.scope.scripting.ScalaScriptEngineWrapper
 import org.junit.Test
 //import opt.cisco.scope.plugins.{WaitForSocketPlugin}
 

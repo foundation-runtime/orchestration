@@ -20,7 +20,7 @@ import org.junit.{BeforeClass, Test}
 //import org.openqa.selenium._
 //import org.openqa.selenium.remote.{CapabilityType, DesiredCapabilities, RemoteWebDriver}
 import java.net.URL
-import com.cisco.oss.foundation.orchestration.utils.Slf4jLogger
+import com.cisco.oss.foundation.orchestration.scope.utils.Slf4jLogger
 //import org.openqa.selenium.support.ByIdOrName
 //import org.openqa.selenium.interactions.Actions
 //import org.openqa.selenium.support.ui.{Select, ExpectedConditions, WebDriverWait}
