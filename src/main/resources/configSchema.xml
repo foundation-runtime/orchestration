@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  ~ Copyright 2014 Cisco Systems, Inc.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<NamespaceDefinitions xsi:noNamespaceSchemaLocation="http://raw.githubusercontent.com/foundation-runtime/configuration/master/ccp_schema/CCP_XML.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<NamespaceDefinition>
+		<NamespaceIdentifier version="TBD" name="TBD" />
+
+
+        <Parameter name="ccpClient" base="service.http.client.base" type="STRUCTURE" description="ccp http client">
+           <DefaultValue>
+               <StructureValue>
+                   <StructureMemberValue name="http.readTimeout" value="90000"/>
+               </StructureValue>
+           </DefaultValue>
+        </Parameter>
+
+        <Parameter name="scope" type="STRUCTURE" description="" base="http.base">
+            <DefaultValue>
+                <StructureValue>
+                    <StructureMemberValue name="http.serviceDescription" value="Scope server API"/>
+                    <StructureMemberValue name="http.port" value="6401"/>
+                    <StructureMemberValue name="http.crossOriginFilter.allowCredentials" value="true"/>
+
+                    <StructureMemberValue name="http.crossOriginFilter.allowedHeaders" index="1" value="X-Requested-With"/>
+                    <StructureMemberValue name="http.crossOriginFilter.allowedHeaders" index="2" value="Content-Type"/>
+                    <StructureMemberValue name="http.crossOriginFilter.allowedHeaders" index="3" value="Accept"/>
+                    <StructureMemberValue name="http.crossOriginFilter.allowedHeaders" index="4" value="Origin"/>
+
+                    <StructureMemberValue name="http.crossOriginFilter.allowedMethods" index="1" value="OPTIONS"/>
+                    <StructureMemberValue name="http.crossOriginFilter.allowedMethods" index="2" value="GET"/>
+                    <StructureMemberValue name="http.crossOriginFilter.allowedMethods" index="3" value="POST"/>
+                    <StructureMemberValue name="http.crossOriginFilter.allowedMethods" index="4" value="PUT"/>
+                    <StructureMemberValue name="http.crossOriginFilter.allowedMethods" index="5" value="DELETE"/>
+                    <StructureMemberValue name="http.crossOriginFilter.allowedMethods" index="6" value="HEAD"/>
+
+                    <StructureMemberValue name="http.crossOriginFilter.allowedOrigins" value="*"/>
+                    <StructureMemberValue name="http.crossOriginFilter.chainPreflight" value="false"/>
+                    <StructureMemberValue name="http.crossOriginFilter.isEnabled" value="true"/>
+                    <StructureMemberValue name="http.crossOriginFilter.preflightMaxAge" value="60"/>
+
+                </StructureValue>
+            </DefaultValue>
+        </Parameter>
+
+        <Parameter name="baseRepoUrl" type="STRING" description="URL of the Scope base repository" required="true"/>
+
+        <Parameter name="service.scope.ssh.privatekey" type="STRING" description="Location of the SSH private key">
+            <DefaultValue>
+                <PrimitiveValue value="/root/.ssh/id_rsa"/>
+            </DefaultValue>
+        </Parameter>
+
+        <Parameter name="mongodb.host" type="STRING" description="Scope MongoDB IP address / DNS name">
+            <DefaultValue>
+                <PrimitiveValue value="localhost"/>
+            </DefaultValue>
+        </Parameter>
+
+        <Parameter name="mongodb.port" type="INTEGER" description="Scope MongoDB port">
+            <DefaultValue>
+                <PrimitiveValue value="27017"/>
+            </DefaultValue>
+        </Parameter>
+
+        <Parameter name="documentation.services.basePath" type="STRING" description="Swagger documentation base URL"/>
+        <Parameter name="documentation.services.version" type="STRING" description="Swagger documentation version"/>
+
+        <!--
+        <Parameter name="documentation.services" type="STRUCTURE" description="Swagger documentation parameters">
+            <StructureDefinition>
+                <StructureMemberDefinition name="basePath" type="STRING"/>
+                <StructureMemberDefinition name="version" type="STRING">
+                    <DefaultValue>
+                        <PrimitiveValue value="1.0"/>
+                    </DefaultValue>
+                </StructureMemberDefinition>
+            </StructureDefinition>
+        </Parameter>
+        -->
+        
+        <Parameter name="cloud" type="STRUCTURE" description="Cloud provider configuration">
+            <StructureDefinition>
+                <StructureMemberDefinition name="provider" type="STRING" required="true">
+                    <Range>
+                        <StringEnum value="rackspace"/>
+                        <StringEnum value="aws"/>
+                        <StringEnum value="openstack"/>
+                        <StringEnum value="vsphere"/>
+                        <StringEnum value="mock"/>
+                    </Range>
+                </StructureMemberDefinition>
+            </StructureDefinition>
+        </Parameter>
+	</NamespaceDefinition>
+</NamespaceDefinitions>

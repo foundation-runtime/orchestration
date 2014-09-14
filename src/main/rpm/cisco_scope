@@ -1,0 +1,650 @@
+#!/bin/bash
+# Copyright 2014 Cisco Systems, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# source function library
+. /etc/init.d/functions
+
+gisCfgDir="../etc"
+stoppedMsg="stopped"
+downStatusMsg="process(es) NOT running"
+upStatusMsg="process(es) running"
+singleInstanceOnly=N
+artifactName=scopeServer
+rpmSoftwareName=scope
+artifactVersion=1.0.0-1-SNAPSHOT
+fullComponentName="Scope Server"
+
+
+get_processIdList(){
+  for ((i=0; i<$procFootprintCount; i++)); do
+    processIdList="${procFootprint[$i]};$processIdList"
+  done
+  processIdList=${processIdList:0:(${#processIdList}-1)}
+}
+
+set_controlParameters(){
+    myHost=`/bin/hostname -f`
+    installDir=`readlink -f ${baseDirectory}/..`
+
+    get_processIdList
+    processName="cisco_service $packageName"
+    startCommand="\"$processName start\""
+    statusCommand="\"$processName status\""
+    stopCommand="\"$processName stop\""
+    startCommandSuccessIndication="\"OK\""
+    exportCmd="export _START_COMMAND=$startCommand;\
+    export _STATUS_COMMAND=$statusCommand;\
+    export _STOP_COMMAND=$stopCommand;\
+    export _PROCESS_ID_LIST=\"$processIdList\";\
+    export _START_COMMAND_SUCCESS=$startCommandSuccessIndication;\
+    export _STOP_COMMAND_SUCCESS=\"$stoppedMsg\";\
+    export _DOWN_INDICATION=\"$downStatusMsg\";\
+    export _UP_INDICATION=\"$upStatusMsg\";\
+    export _FQDN=$myHost;\
+    export _RPM_SOFTWARE_NAME=$rpmSoftwareName;\
+    export _ARTIFACT_NAME=$artifactName;\
+    export _ARTIFACT_VERSION=$artifactVersion;\
+    export _FULL_COMPONENT_NAME=\"$fullComponentName\";\
+    export _INSTALL_DIR=\"$installDir\";\
+}
+
+runProcsCount=0
+declare -a runProcs
+declare -a procFootprint
+declare -a childProcFootprint
+declare -a procFootprintSuffix
+declare -a startCmd
+declare -a startCmdSuffix
+declare -a launchDirSuffix
+declare -a ProcName
+declare -a taskPathList
+
+parse_launchfile(){
+    RhcFlag=N
+    RhcLogdir=/var/log/cisco/cluster
+    taskUser=$currentUser
+    taskInterProcDelay=0
+    taskDelay=5
+    cleanStart="N"
+    taskStopDelay=5
+    taskCustomUseStatus=N
+    taskCustomUseStop=N
+    taskDepCheck="N"
+    taskSig=TERM
+    outputFile=`echo $packageName | sed -e 's/cisco_\(.*\)$/\1/'`
+    maxOutputFiles=10
+    outputLevel=1
+    outputFileLocation=${baseDirectory}/../log
+    startCmdCount=0
+    launchDirCount=0
+    procFootprintCount=0
+    childProcFootprintCount=0
+	depsCmdCount=0
+
+    CIFS="$IFS"
+    IFS=$'\n'
+    for LINE in `sed -e '/^\s*$/d' -e '/^\s*#/d' -e 's/\s\+\(#.*\)\?$//' -e 's/^\s\+//' -e 's/\r$//' < $1`
+    do
+        TAG=`echo "${LINE}" | cut -f1 -d'='`
+        VALUE=`echo "${LINE}" | cut -f2- -d'=' | sed -e 's/^\"\(.*\)\"\s*$/\1/'`
+        if [ x"${TAG}" != x ]; then
+            case "${TAG}" in
+            RHC_LOGGING )
+                RhcFlag="${VALUE}";;
+            RHC_LOGDIR  )
+                RhcLogdir="${VALUE}";;
+            USER        )
+                taskUser="${VALUE}";;
+            LAUNCH_DIR*    )
+				taskPathList[$launchDirCount]="${VALUE}"
+				launchDirSuffix[$launchDirCount]=`echo $TAG | sed -e 's/LAUNCH_DIR\(.*\)$/\1/'`
+				((launchDirCount++));;
+            STOP_DELAY )
+                taskStopDelay=${VALUE};;
+            INTER_PROCESS_DELAY )
+                taskInterProcDelay="${VALUE}";;
+            START_DELAY )
+                taskDelay="${VALUE}";;
+            CLEAN_START )
+                cleanStart="${VALUE}";;
+            USE_CUSTOM_STATUS_PROCESS )
+                taskCustomUseStatus="${VALUE}";;
+            CUSTOM_STATUS_PROCESS* )
+                customStatusCmdUser=`echo $TAG | sed -n -e 's/CUSTOM_STATUS_PROCESS\.\(.*\)$/\1/p'`
+                customStatusCmd="${VALUE}";;
+            SINGLE_INSTANCE_ONLY )
+                singleInstanceOnly="${VALUE}";;
+            TEST_SCRIPT )
+                testCmd="${VALUE}";;
+            USE_CUSTOM_STOP_PROCESS )
+                taskCustomUseStop="${VALUE}";;
+            CUSTOM_STOP_PROCESS* )
+                customStopCmdUser=`echo $TAG | sed -n -e 's/CUSTOM_STOP_PROCESS\.\(.*\)$/\1/p'`
+                customStopCmd="${VALUE}";;
+            DEPENDENCY_CHECK )
+                taskDepCheck="${VALUE}";;
+            DEPENDENCY_SCRIPT )
+                taskDepScript="${VALUE}";;
+            DEPENDENCY* )
+                depsCmd[$depsCmdCount]="${VALUE}"
+                depsCmdSuffix[$depsCmdCount]=`echo $TAG | sed -n -e 's/DEPENDENCY\.\(.*\)$/\1/p'`
+                ((depsCmdCount++));;
+            SIGNAL                  )
+                taskSig="${VALUE}";;
+            PROCESS_FOOTPRINT* )
+                procFootprint[$procFootprintCount]="${VALUE}"
+                procFootprintSuffix[$procFootprintCount]=`echo $TAG | sed -e 's/PROCESS_FOOTPRINT\(.*\)$/\1/'`
+                ((procFootprintCount++));;
+            CHILD_PROCESS_FOOTPRINT* )
+                childProcFootprint[$childProcFootprintCount]="${VALUE}"
+                ((childProcFootprintCount++));;
+            LAUNCH_STRING*  )
+                startCmd[$startCmdCount]="${VALUE}"
+                startCmdSuffix[$startCmdCount]=`echo $TAG | sed -e 's/LAUNCH_STRING\(.*\)$/\1/'`
+                ((startCmdCount++));;
+            JAVA_HOME     )
+                javaHome="${VALUE}"
+                [ "X$javaHome" == "X" ] && { echo "CONFIGURATION ERROR: JAVA_HOME parameter is defined but has not been set."; exit 1; }
+                ;;
+            OUTPUT_FILE     )
+                outputFile="${VALUE}";;
+            MAX_OUTPUT_FILES     )
+                maxOutputFiles="${VALUE}";;
+            OUTPUT_FILE_LOCATION     )
+                outputFileLocation="${VALUE}";;
+            OUTPUT_LEVEL    )
+                case ${VALUE} in
+                NONE )
+                    outputLevel=0;;
+                ERROR )
+                    outputLevel=1;;
+                ALL )
+                    outputLevel=2;;
+                esac;;
+            PID_FILE     )
+                pidFile="${VALUE}";;
+            esac
+        fi
+    done
+    IFS="$CIFS"
+    [ "x${RhcFlag}" = "xY" ] && exec 1>>${RhcLogdir}/${packageName}.log 2>&1
+    [ $startCmdCount -eq 0 ] && { echo "CONFIGURATION ERROR: LAUNCH_STRING have not defined."; exit 1; }
+    [ $procFootprintCount -eq 0 -a "x$taskCustomUseStatus" != "xY" ] && { echo "CONFIGURATION ERROR: PROCESS_FOOTPRINT have not defined."; exit 1; }
+    if [ $procFootprintCount -gt 1 ]; then
+      for ((i=0; i<$procFootprintCount; i++)); do
+        [ "X${procFootprintSuffix[$i]}" == "X" ] && { echo "CONFIGURATION ERROR: multiple PROCESS_FOOTPRINT was defined but at least one havn't suffix"; exit 1; }
+        [ "${procFootprintSuffix[$i]:0:1}" != "." ] && { echo "CONFIGURATION ERROR: non-well formatted multiple PROCESS_FOOTPRINT: it should be in format PROCESS_FOOTPRINT.<ID> "; exit 1; }
+	procFootprintSuffix[$i]=${procFootprintSuffix[$i]:1:${#procFootprintSuffix[$i]}}
+      done
+    elif [ "X${procFootprintSuffix[0]}" != "X" ]; then
+	  procFootprintSuffix[0]=${procFootprintSuffix[0]:1:${#procFootprintSuffix[0]}}
+    fi
+    [ "x$taskCustomUseStop" == "xY" -a "X$customStopCmd" == "X" ] && { echo "CONFIGURATION ERROR: custom stop command flag have been set but stop command itself have not been configured."; exit 1; }
+    [ "x$taskCustomUseStatus" == "xY" -a "X$customStatusCmd" == "X" ] && { echo "CONFIGURATION ERROR: custom status command flag have been set but status command itself have not been configured."; exit 1; }
+    [ "x$taskCustomUseStatus" == "xY" -a "X$pidFile" != "X" ] && { echo "CONFIGURATION ERROR: PID_FILE cann't be used with Custom Status Command."; exit 1; }
+    [ "x$taskDepCheck" == "xY" -a "X$taskDepScript" == "X" ] && { echo "CONFIGURATION ERROR: dependency check flag have been set but dependency check script itself have not been configured."; exit 1; }
+    [ "x$customStopCmdUser" == "x" ] && customStopCmdUser=$taskUser
+    [ "x$customStatusCmdUser" == "x" ] && customStatusCmdUser=$taskUser
+	[ $taskUser != $currentUser -a $currentUser != $rootUser ] && { echo "CONFIGURATION ERROR: cannot running service as '$taskUser' user: you try running this service from a non-root user other than '$taskUser'"; exit 1; }
+    appRootDir=`readlink -f ${baseDirectory}/../`
+	[ $launchDirCount -eq 0 ] && ((launchDirCount++))
+	for ((i=0; i<$launchDirCount; i++)); do
+    	[ "x${taskPathList[$i]}" == "x" ] && taskPathList[$i]=${baseDirectory}
+    	taskPathList[$i]=`readlink -f ${taskPathList[$i]}`
+		[ "x${launchDirSuffix[$i]}" != "x" ] && launchDirSuffix[$i]=${launchDirSuffix[$i]:1} || defaultTaskPath=${taskPathList[$i]}
+    	[ ! -d ${taskPathList[$i]} ] && { echo "CONFIGURATION ERROR: LAUNCH_DIR is not configured correctly. It does NOT point to the existent directory."; exit 1; } 
+    	[[ "${taskPathList[$i]}" =~ "$appRootDir" ]] || { echo "CONFIGURATION ERROR: LAUNCH_DIR is not configured correctly. It does NOT point to the directory structure in which '${appRootDir##*/}' is installed. (This could be due to an incorrect link in /opt/cisco)"; exit 1; }
+	done
+}
+
+getTaskPath(){
+	local suffix
+    [ $# -eq 1 ] && suffix=$1 || suffix=""
+	for ((i=0; i<$launchDirCount; i++)); do
+		if [ "x${launchDirSuffix[$i]}" == "x$suffix" ]; then
+			echo ${taskPathList[$i]}
+			return
+		fi
+	done
+	echo $defaultTaskPath
+}
+
+isMatch2AnyTaskPath(){
+	local proc_wd=$1
+	for ((i=0; i<$launchDirCount; i++)); do
+		[ "x${taskPathList[$i]}" == "x$proc_wd" ] && return 0
+	done
+	return 1
+}
+
+cisco_launcher(){
+    # function get variable name as a parameter. To convert it to the variable value we should eval it
+    eval runCmd=$1
+    local outputRedirection=$2
+    local jobUser=$3
+	local taskPath=$4
+    [ $# -eq 4 ] && backGround="&"
+    local runUser=
+    [ "$currentUser" != "$jobUser" ] && runUser="$RUNUSER - $jobUser -s";
+    [ "X$javaHome" != "X" ] && runCmd="export JAVA_HOME=$javaHome;"$runCmd
+    # slash before '$runCmd' and '$exportCmd' used to prevent 'eval' from performing substitutions inside this commands
+    local cmd="$runUser /bin/bash -c \"ulimit -Sc unlimited; cd $taskPath; \$exportCmd \$runCmd $backGround\" $outputRedirection"
+    eval $cmd
+    return $?
+}
+
+convertCfgFileV2ToV3()
+{
+  local tmpFile
+  local user
+  local VALUE
+  local TAG
+  local useSuffix
+
+  tmpFile=${baseDirectory}/${gisCfgDir}/.${packageName}.cfg.tmp
+  oldFile=${baseDirectory}/${gisCfgDir}/.${packageName}.cfg.old
+  [ -f $tmpFile ] && unlink $tmpFile
+  lsCount=`egrep -c ^LAUNCH_STRING $launchFile`
+  plCount=`egrep -c ^PROCESS_LIST $launchFile`
+  [ $lsCount -ne $plCount ] && { echo "ERROR: Cannot convert v2.x format GIS config file '$launchFile' to the v3.x compatible format. You should do this manually."; exit 1; }
+  [ $lsCount -gt 1 ] && { useSuffix=1; plIndex=1; lsIndex=1; } || useSuffix=0
+  sed -e '/^\s*$/d' -e '/^\s*#/d' -e 's/\s\+#.*$//' -e 's/^\s\+//' ${launchFile} | while read line; do
+    if ! [[ "$line" =~ "[A-Z_]*=" ]]; then
+		line=`sed -e 's/\(^\s*[A-Z_]*\) /\1=/' <<< $line`
+    fi
+    TAG=`echo "${line}" | cut -f1 -d'='`
+	VALUE=`echo "${line}" | awk -F'=' '{print $2}' | sed 's/"//g'`
+    case "$TAG" in
+		APP_HOME )
+		  result="LAUNCH_DIR=$VALUE";;
+		LAUNCH_STRING )
+		  user=`sed -e "s/^$TAG=\([a-z]*\)=.*$/\1/" <<< "$line"`
+		  [ "x$user" != "x" ] && user="."$user
+		  VALUE=`sed -e "s/^$TAG=[a-z]*=\(.*\)$/\1/" <<< "$line"`
+		  [ $useSuffix -eq 1 ] && { suffix="."$lsIndex; ((lsIndex++)); } || suffix=""
+		  result="$TAG${suffix}${user}=$VALUE"
+		;;
+		PROCESS_LIST )
+		  VALUE=`sed -e 's/^.*=\(.*\)$/\1/' <<< "$line"`
+		  [ $useSuffix -eq 1 ] && { suffix="."$plIndex; ((plIndex++)); } || suffix=""
+		  result="PROCESS_FOOTPRINT${suffix}=$VALUE"
+		;;
+		USE_CUSTOM_STATUS_PROCESS|USE_CUSTOM_STOP_PROCESS )
+		  [ "$VALUE" -eq "0" ] && VALUE="N" || VALUE="Y"
+		  result="$TAG=$VALUE";;
+		RHC_LOGGING )
+		  [ "$VALUE" -eq "NO" ] && VALUE="N" || VALUE="Y"
+		  result="$TAG=$VALUE";;
+		CUSTOM_STATUS_PROCESS|CUSTOM_STOP_PROCESS )
+		  result=`sed -e 's/==/=/' <<< "$line"`
+		  result=`sed -e "s/^\($TAG\)=\([a-z]\+\)=/\1\.\2=/" <<< "$line"`;;
+		USE_THREAD )
+		  result="";;
+		SIGNAL )
+		  signal=`sed -e 's/^.*sig\(.*\)$/\1/' <<< "$line" | tr '[a-z]' '[A-Z]'`
+		  result="$TAG=$signal";;
+		*)
+		  result="$line";
+	esac
+    echo "$result" >> $tmpFile
+  done
+  ownership=`ls -l $launchFile | awk '{print $3 "." $4;}'`
+  mv $launchFile $oldFile
+  mv $tmpFile $launchFile
+  chown $ownership $launchFile $oldFile
+
+  echo "'${packageName}.cfg' has been upgraded automatically from GIS v2.x format to GIS v3.x format. The old '${packageName}.cfg' has been saved as '.${packageName}.cfg.old'."
+  [ $lsCount -gt 1 ] && echo "Please note that the upgrade function assumes that the order of LAUNCH_STRING matches the order of PROCESS_LIST. If this is not the case, you will need to edit '${packageName}.cfg' manually."
+}
+
+calculateEnvironment(){
+    linkLocation=`readlink -f ${0}`
+    baseDirectory=`dirname ${linkLocation}`
+    packageName=`basename ${linkLocation}`
+    launchFile=${baseDirectory}/${gisCfgDir}/${packageName}.cfg
+    currentUser=`whoami`
+    rootUser=root
+    if [ ! -f "${launchFile}" ]; then
+        echo "Can not launch - need the ${launchFile} file"
+        exit 1
+    fi
+    egrep ^PROCESS_LIST ${launchFile}  >/dev/null 2>&1
+    [ $? -eq 0 ] && convertCfgFileV2ToV3
+    parse_launchfile "${launchFile}"
+    # For SELinux use 'runuser' instead of 'su'
+    [ -x "/sbin/runuser" ] && RUNUSER="/sbin/runuser" || RUNUSER="su"
+}
+
+getPid(){
+  local taskPath
+  userProcesses=`ps -u ${taskUser} -o pid,ppid,cmd --no-headers`
+  runProcsCount=0
+  for ((i=0; i<$procFootprintCount; i++)); do
+    if [ "X$singleInstanceOnly" == "XN" ]; then
+      taskPath=$(getTaskPath ${procFootprintSuffix[$i]})
+      pidList=`echo "$userProcesses" | awk -v patern="${procFootprint[$i]}" '{if($2==1 && $0~patern) print $1;}'`
+      runProcs[$i]=""
+      for pid in $pidList; do
+        if [ "X`readlink -f /proc/$pid/cwd`" == "X$taskPath" ]; then
+          runProcs[$i]=$pid
+          ((runProcsCount++))
+          break
+        fi
+      done
+    else
+      runProcs[$i]=`echo "$userProcesses" | awk -v patern="${procFootprint[$i]}" '{if($2==1 && $0~patern){ print $1; exit; }}'`
+      [ ! -z ${runProcs[$i]} ] && ((runProcsCount++))
+    fi
+  done
+}
+
+runDepsCmds(){
+  for ((i=0; i<$depsCmdCount; i++)); do
+    if ! `${depsCmd[$i]} > /dev/null 2>&1`; then
+      statusMsg="DEPENDENCY FAILURE: the '${depsCmdSuffix[$i]}' dependency failed.\n"
+      return 3
+    fi
+  done
+  return 0
+}
+
+getStatusBySuffix(){
+  local i
+  startSuffix=$1
+  for ((i=0; i<$procFootprintCount; i++)); do
+    if [ "X${procFootprintSuffix[$i]}" == "X$startSuffix" ]; then
+      [ "X${runProcs[$i]}" != "X" ] && return 1 || return 0
+    fi
+  done
+  return 0
+}
+
+buildStatusMsg(){
+  statusMsg=
+  for ((i=0; i<$procFootprintCount; i++)); do
+    if [ "X${runProcs[$i]}" != "X" ]; then
+      statusMsg=${statusMsg}${packageName}" "${procFootprintSuffix[$i]}" "$upStatusMsg" ("${runProcs[$i]}")\n"
+    else
+      statusMsg=${statusMsg}${packageName}" "${procFootprintSuffix[$i]}" "$downStatusMsg"\n"
+    fi
+  done
+}
+
+testproc(){
+  [ "x$testCmd" == "x" ] && { echo "The test script has not been configured for '$packageName'. To configure it set the TEST_SCRIPT parameter."; return 1; }
+  cisco_launcher \$testCmd "" $taskUser "$(getTaskPath)" "fg"
+  res=$?
+  [ $res -eq 0 ] && echo "Test of '$packageName' passed" || echo "Test of '$packageName' failed"
+  return $res
+}
+
+checkproc(){
+  local Rval
+  if [ "x$taskCustomUseStatus" == "xY" ]; then 
+    cisco_launcher \$customStatusCmd "1>/dev/null 2>&1" $customStatusCmdUser "$(getTaskPath)" "fg"
+    Rval=$?
+    if [ $Rval -eq 0 ]; then
+      statusMsg=$upStatusMsg"\n"
+      if [ $depsCmdCount -gt 0 ]; then
+        runDepsCmds
+        Rval=$?
+      fi
+    else
+      statusMsg=$downStatusMsg"\n"; Rval=3;
+    fi
+    echo -e -n $statusMsg
+  else
+    Rval=3
+    getPid
+    buildStatusMsg
+    if [ $runProcsCount -eq $procFootprintCount ]; then
+      Rval=0
+      if [ $depsCmdCount -gt 0 ]; then
+        runDepsCmds
+        Rval=$?
+      fi
+    elif [ $runProcsCount -gt 0 ]; then
+      echo "SOME process(es) NOT running !!"
+    fi
+    echo -n -e $statusMsg
+  fi
+  return $Rval
+}
+
+killAllProcs(){
+  local -a killArray
+
+  killArray=( "${procFootprint[@]}" "${childProcFootprint[@]}" )
+  userProcesses=`ps -u ${taskUser} -o pid,cmd --no-headers`
+  pids=""
+  for ((i=0; i<${#killArray[@]}; i++)); do
+    pidList=`echo "$userProcesses" | awk -v patern="${killArray[$i]}" '{if($0~patern) print $1;}'`
+    for pid in $pidList; do
+      isMatch2AnyTaskPath "`readlink -f /proc/$pid/cwd 2>/dev/null`"
+      [ $? -eq 0 ] && pids="$pids $pid"
+    done
+  done
+  [ "X$pids" != "X" ] && kill -9 $pids
+  usleep 100000
+}
+
+cisco_killproc(){
+    local Rval=0
+    checkproc >/dev/null
+    retVal=$?
+    if [ "x$taskCustomUseStatus" == "xY" ] || [ $runProcsCount -gt 0 -a "x$taskCustomUseStatus" != "xY" ]; then
+      if [ "x$taskCustomUseStop" == "xY" ]; then
+        cisco_launcher \$customStopCmd "1>/dev/null 2>&1" $customStopCmdUser "$(getTaskPath)" "fg"
+        Rval=$?
+        if [ $Rval -eq 0 ]; then
+          checkproc >/dev/null
+          retVal=$?
+          while [ $retVal -eq 0 -a $taskStopDelay -gt 0 ]; do
+            sleep 1
+            ((taskStopDelay--))
+            checkproc >/dev/null
+            retVal=$?
+          done
+          if [ $retVal -eq 0 ]; then
+            [ "x$taskCustomUseStatus" != "xY" ] && killAllProcs || Rval=1
+          fi
+        fi
+        [ $Rval -eq 0 ] && echo $stoppedMsg || echo "Failed to stop process"
+        return $Rval
+      fi
+      [ "x$taskCustomUseStatus" == "xY" -a "x$taskCustomUseStop" != "xY" ] && getPid
+      pids=""
+      for ((i=0; i<$procFootprintCount; i++)); do
+        [ "X${runProcs[$i]}" != "X" ] && pids="$pids ${runProcs[$i]}"
+      done
+      kill -$taskSig $pids
+      while [ $runProcsCount -gt 0 -a $taskStopDelay -gt 0 ]; do
+        sleep 1
+        taskStopDelay=$((taskStopDelay-1))
+        getPid
+      done
+      [ $runProcsCount -gt 0 -o $childProcFootprintCount -gt 0 ] && killAllProcs
+      echo $stoppedMsg
+    else
+      echo "not running"
+    fi
+    return $Rval
+}
+
+# calculate output file name and cleanup old output files
+getOutputFileName(){
+  local suffix=$1
+
+  [ "X$suffix" == "X" ] && outFileName=$outputFile || outFileName=$suffix
+  outFileName=${outFileName}.out
+  if [ -f ${outputFileLocation}/$outFileName ]; then
+    lastLogDate=`head -1 ${outputFileLocation}/$outFileName | sed -n -e 's/^#.* \([0-9-]\+\)$/\1/p'`
+    [ "X$lastLogDate" == "X" ] && lastLogDate=`date +%Y-%m-%d`
+    LogDateSeqNum=`ls -tr ${outputFileLocation}/${outFileName}.${lastLogDate}* 2>/dev/null | tail -1 | sed -n -e 's/.*\([0-9]\+\)$/\1/p'`
+    mv ${outputFileLocation}/$outFileName ${outputFileLocation}/${outFileName}.${lastLogDate}.$((LogDateSeqNum+1))
+  fi
+  allLogs=`ls -tr ${outputFileLocation}/${outFileName}* 2>/dev/null`
+  allLogsCount=`echo "$allLogs" | wc -l`
+  logs2RemoveCount=$((allLogsCount-maxOutputFiles))
+  [ $logs2RemoveCount -gt 0 ] && rm -f `echo "$allLogs" | head -$logs2RemoveCount`
+  echo "# Start date `date +%Y-%m-%d`" > ${outputFileLocation}/${outFileName}
+}
+
+start(){
+    checkproc >/dev/null
+    retVal=$?
+    if [ $retVal -eq 0 ]; then
+        echo "${packageName} already running"
+        return
+    elif [ "x$taskCustomUseStatus" != "xY" -a $runProcsCount -gt 0 ]; then
+        echo "SOME process(es) are already running !!"
+        [ "X$cleanStart" == "XY" ] && stop
+    fi        
+    echo -n $"Starting $packageName: "
+    if [ "x$taskDepCheck" = "xY" ]; then
+        echo -n $": Running Dependency Script ${taskDepScript} : "
+        (cd $(getTaskPath); ${taskDepScript} 1>/dev/null 2>&1)
+        RETVAL=$?
+        [ $RETVAL -ne 0 ] && { echo '    [FAILED DEPENDENCY]'; return; }
+    fi
+    if [ $depsCmdCount -gt 0 ]; then
+      runDepsCmds
+      Rval=$?
+	  [ $Rval -ne 0 ] && { echo -n -e $statusMsg; return; }
+    fi
+    set_controlParameters
+    local i
+    for ((i=0; i<$startCmdCount; i++)); do
+      if [[ ${startCmdSuffix[$i]} =~ "\..+\..+" ]]; then
+	startCmdUser=`echo ${startCmdSuffix[$i]} | cut -d"." -f3`
+	logSuffix=`echo ${startCmdSuffix[$i]} | cut -d"." -f2`
+      else
+	startCmdUser=$taskUser
+	logSuffix=${startCmdSuffix[$i]:1}
+      fi
+      getStatusBySuffix $logSuffix
+      [ $? -eq 1 ] && continue # this process already running
+      getOutputFileName "$logSuffix"
+      fullOutputFile=${outputFileLocation}/${outFileName}
+      case $outputLevel in
+        0) redirectOut="1>/dev/null 2>&1";;
+        1) redirectOut="1>/dev/null 2>>$fullOutputFile";;
+        *) redirectOut="1>>$fullOutputFile 2>&1"
+      esac
+	  if [ $outputLevel -gt 0 -a $currentUser == $rootUser ]; then
+		  chown ${startCmdUser}. $fullOutputFile
+	  fi
+      cisco_launcher \${startCmd[$i]} "${redirectOut}" $startCmdUser "$(getTaskPath $logSuffix)"
+      # if runuser command is failed it is critical error - we cann't continue
+      [ $? -ne 0 ] && { echo_failure; echo; RETVAL=1; return; }
+      [ $taskInterProcDelay -gt 0 -a $i -ne $((startCmdCount-1)) ] && sleep $taskInterProcDelay
+    done
+    sleep $taskDelay
+    checkproc >/dev/null
+    retVal=$?
+    if [ $retVal -eq 0 ]; then
+        if [ "X$pidFile" != "X" ]; then 
+            for ((i=0; i<$procFootprintCount; i++)); do
+                echo ${runProcs[$i]} > ${pidFile}${procFootprintSuffix[$i]}
+            done
+        fi
+        [ $currentUser == $rootUser ] && touch /var/lock/subsys/$packageName
+        echo_success;
+    else
+        [ "x$taskCustomUseStatus" != "xY" -a $runProcsCount -gt 0 -a $runProcsCount -lt $procFootprintCount ] && { echo "SOME process(es) NOT running !!"; }
+		echo -n -e $statusMsg
+        echo_failure;
+        RETVAL=1
+    fi
+    echo
+}
+
+stop(){
+        echo -n $"Stopping $packageName: "
+        cisco_killproc
+        RETVAL=$?
+	if [ $RETVAL -eq 0 ]; then
+	  if [ "X$pidFile" != "X" ]; then
+            for ((i=0; i<$procFootprintCount; i++)); do
+	      [ -f ${pidFile}${procFootprintSuffix[$i]} ] && rm -f ${pidFile}${procFootprintSuffix[$i]}
+            done
+          fi
+	  [ $currentUser == $rootUser ] && rm -f /var/lock/subsys/$packageName
+       fi
+}
+
+info(){
+    getPid
+    if [ $runProcsCount -eq 0 ]; then
+        echo "${packageName} - No info available"
+	return
+    fi
+    for ((i=0; i<$procFootprintCount; i++)); do
+      if [ "X${runProcs[$i]}" != "X" ]; then
+	ProcName[$i]=`cat /proc/${runProcs[$i]}/cmdline | tr "\\0" " " | awk '{split($1,arr,"/"); print arr[length(arr)];}'`
+        echo "${ProcName[$i]} running (${runProcs[$i]})"
+      fi
+    done
+}
+
+longinfo(){
+   echo "LongInfo request"
+   echo "----------------"
+   info
+   echo "---------------------------------------------------------------------------------------"
+    [ $runProcsCount -eq 0 ] && return;
+    for ((i=0; i<$procFootprintCount; i++)); do
+      if [ "X${runProcs[$i]}" != "X" ]; then
+        echo "--------- ${ProcName[$i]} PID ${runProcs[$i]} environment --------------"
+        cat /proc/${runProcs[$i]}/environ |  tr \\\0 \\n
+        echo "================================================"
+      fi
+    done
+}
+
+RETVAL=0
+calculateEnvironment
+[ "x${RhcFlag}" == "xY" ] && echo -e "Called with $1\n============== `date` ============="
+
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  restart)
+        stop
+        start
+        ;;
+   status)
+        checkproc
+        RETVAL=$?
+        ;;
+   test)
+        testproc
+        RETVAL=$?;;
+   info)
+        info
+        ;;
+   longinfo)
+        longinfo
+        ;;
+  *)
+        echo $"Usage: $0 {start|stop|status|restart|test}"
+        RETVAL=1 
+esac
+
+exit $RETVAL
