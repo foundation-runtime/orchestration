@@ -204,7 +204,7 @@ trait BasicResource extends Slf4jLogger {
       case throwable => {
         val msg = s"Error while creating instance of product ${product.id} for system ${system.systemId}: ${throwable.getMessage}"
         logError(msg)
-        updateInstanceStatus(inst, "failed", Some(msg), None, None)
+        updateInstanceStatus(inst, ScopeConstants.FAILED, Some(msg), None, None)
         logError(throwable.getMessage, throwable)
       }
     }
@@ -495,7 +495,7 @@ trait BasicResource extends Slf4jLogger {
           case status => {
             logError(s"stderr : ${execResponse.getError}")
             logError(s"stdout : ${execResponse.getOutput}")
-            scopedb.updateMachineStatus(instanceId, vmUtils.getNameFromNodeMetadata(node), "FAILED")
+            scopedb.updateMachineStatus(instanceId, vmUtils.getNameFromNodeMetadata(node), ScopeConstants.FAILED)
             return false
           }
         }
@@ -625,7 +625,7 @@ trait BasicResource extends Slf4jLogger {
         instance match {
           case Some(ins) => {
             val tags = Set(ins.instanceId,ins.product.productName,ins.systemId)
-            val nodesByTags: mutable.Set[ScopeNodeMetadata] = vmUtils.listNodesByTags(tags)
+            val nodesByTags = vmUtils.listNodesByTags(tags)
             nodesByTags.foreach((hostDetails) => {
               logInfo("Deleting vm: {} id: {}", hostDetails.hostname, hostDetails.id)
               vmUtils.deleteVM(hostDetails)

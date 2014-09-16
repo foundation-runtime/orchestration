@@ -15,17 +15,28 @@
   ~ limitations under the License.
   -->
 
-<NamespaceDefinitions xsi:noNamespaceSchemaLocation="http://raw.githubusercontent.com/foundation-runtime/configuration/master/ccp_schema/CCP_XML.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<NamespaceDefinition>
-		<NamespaceIdentifier version="TBD" name="TBD" />
+<NamespaceDefinitions
+        xsi:noNamespaceSchemaLocation="http://raw.githubusercontent.com/foundation-runtime/configuration/master/ccp_schema/CCP_XML.xsd"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <NamespaceDefinition>
+        <NamespaceIdentifier version="TBD" name="TBD"/>
 
 
         <Parameter name="ccpClient" base="service.http.client.base" type="STRUCTURE" description="ccp http client">
-           <DefaultValue>
-               <StructureValue>
-                   <StructureMemberValue name="http.readTimeout" value="90000"/>
-               </StructureValue>
-           </DefaultValue>
+            <DefaultValue>
+                <StructureValue>
+                    <StructureMemberValue name="http.readTimeout" value="90000"/>
+                </StructureValue>
+            </DefaultValue>
+        </Parameter>
+
+        <Parameter name="scope-ui" type="STRUCTURE" description="" base="http.base">
+            <DefaultValue>
+                <StructureValue>
+                    <StructureMemberValue name="http.serviceDescription" value="Scope server UI"/>
+                    <StructureMemberValue name="http.port" value="80"/>
+                </StructureValue>
+            </DefaultValue>
         </Parameter>
 
         <Parameter name="scope" type="STRUCTURE" description="" base="http.base">
@@ -35,7 +46,8 @@
                     <StructureMemberValue name="http.port" value="6401"/>
                     <StructureMemberValue name="http.crossOriginFilter.allowCredentials" value="true"/>
 
-                    <StructureMemberValue name="http.crossOriginFilter.allowedHeaders" index="1" value="X-Requested-With"/>
+                    <StructureMemberValue name="http.crossOriginFilter.allowedHeaders" index="1"
+                                          value="X-Requested-With"/>
                     <StructureMemberValue name="http.crossOriginFilter.allowedHeaders" index="2" value="Content-Type"/>
                     <StructureMemberValue name="http.crossOriginFilter.allowedHeaders" index="3" value="Accept"/>
                     <StructureMemberValue name="http.crossOriginFilter.allowedHeaders" index="4" value="Origin"/>
@@ -91,7 +103,7 @@
             </StructureDefinition>
         </Parameter>
         -->
-        
+
         <Parameter name="cloud" type="STRUCTURE" description="Cloud provider configuration">
             <StructureDefinition>
                 <StructureMemberDefinition name="provider" type="STRING" required="true">
@@ -105,5 +117,5 @@
                 </StructureMemberDefinition>
             </StructureDefinition>
         </Parameter>
-	</NamespaceDefinition>
+    </NamespaceDefinition>
 </NamespaceDefinitions>

@@ -22,7 +22,7 @@ import javax.servlet.{Filter, Servlet}
 
 import com.cisco.oss.foundation.flowcontext.FlowContextFactory
 import com.cisco.oss.foundation.http.server.jetty.JettyHttpServerFactory
-import com.cisco.oss.foundation.orchestration.scope.utils.Slf4jLogger
+import com.cisco.oss.foundation.orchestration.scope.utils.{ScopeUtils, Slf4jLogger}
 import com.google.common.collect.{ArrayListMultimap, ListMultimap}
 import org.apache.log4j.PropertyConfigurator
 import org.apache.log4j.helpers.Loader
@@ -69,17 +69,20 @@ class RunScope extends Slf4jLogger {
 
     JettyHttpServerFactory.INSTANCE.startHttpServer("scope", servletMap, filterMap, Collections.singletonList[EventListener](new ContextLoaderListener(webConfig)))
 
-    val uiWebConfig = new XmlWebApplicationContext()
-    uiWebConfig.setConfigLocation("classpath*:/META-INF/scopeUIApplicationContext.xml")
-    uiWebConfig.registerShutdownHook()
-    val uiServletMap: ArrayListMultimap[String, Servlet] = ArrayListMultimap.create()
-    uiServletMap.put("/*", new DispatcherServlet(uiWebConfig));
-    JettyHttpServerFactory.INSTANCE.startHttpServer("scope-ui", uiServletMap, uiFilterMap, Collections.singletonList[EventListener](new ContextLoaderListener(uiWebConfig)))
-
-
+    if (ScopeUtils.configuration.getBoolean("scope-ui.isEnabled", false)) {
+      val uiWebConfig = new XmlWebApplicationContext()
+      uiWebConfig.setConfigLocation("classpath*:/META-INF/scopeUIApplicationContext.xml")
+      uiWebConfig.registerShutdownHook()
+      val uiServletMap: ArrayListMultimap[String, Servlet] = ArrayListMultimap.create()
+      uiServletMap.put("/*", new DispatcherServlet(uiWebConfig));
+      JettyHttpServerFactory.INSTANCE.startHttpServer("scope-ui", uiServletMap, uiFilterMap, Collections.singletonList[EventListener](new ContextLoaderListener(uiWebConfig)))
+    }
   }
 
   def stop() {
     JettyHttpServerFactory.INSTANCE.stopHttpServer("scope")
+    if (ScopeUtils.configuration.getBoolean("scope-ui.isEnabled", false)) {
+      JettyHttpServerFactory.INSTANCE.stopHttpServer("scope-ui")
+    }
   }
 }
