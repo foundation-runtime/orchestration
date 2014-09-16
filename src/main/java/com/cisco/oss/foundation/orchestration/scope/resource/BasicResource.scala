@@ -38,6 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 import scala.collection.JavaConversions._
 import scala.collection.immutable.{HashMap, Map, SortedMap}
+import scala.collection.mutable
 import scala.concurrent._
 import scala.concurrent.duration.Duration
 
@@ -612,12 +613,27 @@ trait BasicResource extends Slf4jLogger {
     DnsUtilsFactory.instance().deleteDns(dnsName)
   }
 
-  def deleteInstanceVMs(machineIds: Map[String, ScopeNodeMetadata]) = {
-    machineIds.values.foreach((hostDetails) => {
-      logInfo("Deleting vm: {} id: {} ip: {}", hostDetails.hostname, hostDetails.id, hostDetails.privateAddresses.head)
-      vmUtils.deleteVM(hostDetails)
+  def deleteInstanceVMs(machineIds: Map[String, ScopeNodeMetadata], instance: Option[Instance] = None) = {
+    machineIds.values match {
+      case vals: Iterable[ScopeNodeMetadata] if vals.size > 0 => {
+        vals.foreach((hostDetails) => {
+          logInfo("Deleting vm: {} id: {} ip: {}", hostDetails.hostname, hostDetails.id, hostDetails.privateAddresses.head)
+          vmUtils.deleteVM(hostDetails)
+        })
+      }
+      case _ => {
+        instance match {
+          case Some(ins) => {
+            val tags = Set(ins.instanceId,ins.product.productName,ins.systemId)
+            val nodesByTags: mutable.Set[ScopeNodeMetadata] = vmUtils.listNodesByTags(tags)
+            nodesByTags.foreach((hostDetails) => {
+              logInfo("Deleting vm: {} id: {}", hostDetails.hostname, hostDetails.id)
+              vmUtils.deleteVM(hostDetails)
+            })
+          }
+          case None =>
+        }
+      }
     }
-    )
-
   }
 }

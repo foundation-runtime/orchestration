@@ -34,12 +34,12 @@ import scala.collection.immutable.Map
 @RequestMapping(Array[String]("/systems"))
 class SystemsResources extends Slf4jLogger with BasicResource {
 
-//  @ExceptionHandler(Array(classOf[Exception]))
-//  @ResponseBody
-//  def handleException(e: Exception, response: HttpServletResponse): String = {
-//    //    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-//    return e.getMessage();
-//  }
+  //  @ExceptionHandler(Array(classOf[Exception]))
+  //  @ResponseBody
+  //  def handleException(e: Exception, response: HttpServletResponse): String = {
+  //    //    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+  //    return e.getMessage();
+  //  }
 
   @RequestMapping(method = Array[RequestMethod](RequestMethod.GET), produces = Array[String]("application/json"))
   @ResponseBody
@@ -49,12 +49,12 @@ class SystemsResources extends Slf4jLogger with BasicResource {
       logInfo("returning all systems")
       val systems = scopedb.findAllSystems
       systems.map((system) => {
-    	  system.copy(password="****")
+        system.copy(password = "****")
       })
     }
 
   }
-  
+
   @RequestMapping(value = Array[String]("/{systemUserId}"), method = Array[RequestMethod](RequestMethod.POST))
   @ResponseBody
   def createSystem(@PathVariable("systemUserId") systemUserId: String, @RequestBody password: String) {
@@ -86,7 +86,7 @@ class SystemsResources extends Slf4jLogger with BasicResource {
     val foundationVersion = ScopeUtils.configuration.getString("foundation.version")
     super.instantiateProduct(instance, foundationProductName, foundationVersion, None)
   }
-  
+
   @RequestMapping(value = Array[String]("/{systemId}"), method = Array[RequestMethod](RequestMethod.GET))
   @ResponseBody
   def getSystem(@PathVariable("systemId") systemId: String) = {
@@ -94,10 +94,10 @@ class SystemsResources extends Slf4jLogger with BasicResource {
     ScopeUtils.time(logger, "getSystem-rest") {
       logInfo("getting system: {}", systemId)
       val system = scopedb.findSystem(systemId)
-      system.getOrElse(throw new SystemNotFound).copy(password="****")
+      system.getOrElse(throw new SystemNotFound).copy(password = "****")
     }
   }
-  
+
   @RequestMapping(value = Array[String]("/{systemId}/instances"), method = Array[RequestMethod](RequestMethod.GET))
   @ResponseBody
   def getInstancesForSystem(@PathVariable("systemId") systemId: String) = {
@@ -140,12 +140,11 @@ class SystemsResources extends Slf4jLogger with BasicResource {
   def deleteInstance(@PathVariable("systemId") systemUserId: String, @PathVariable("instanceId") instanceId: String) = {
 
     ScopeUtils.time(logger, "deleteInstance-rest") {
-      //TODO: need to remove ccp configuration and /etc/hosts
       val instance = scopedb.findInstance(instanceId).getOrElse(throw new InstanceNotFound)
       val system = scopedb.findSystem(systemUserId).getOrElse(throw new SystemNotFound)
       val deletable = instance.deletable.getOrElse(true)
       // undeletable flag used for UI layer only. REST call should delete instance despite the flag.
-      if (!deletable){
+      if (!deletable) {
         logWarn("instance with Id: {} for system: {} will be deleted although it is marked as not deletable", instanceId, systemUserId)
       }
 
@@ -153,15 +152,15 @@ class SystemsResources extends Slf4jLogger with BasicResource {
       system.foundation match {
         case Some(foundation) => {
           foundation.rsaKeyPair.get("private") match {
-            case  Some(key) => {
-              val ccpServersDetails = foundation.machineIds.filter( set => set._2.hostname.contains("ccp") )
+            case Some(key) => {
+              val ccpServersDetails = foundation.machineIds.filter(set => set._2.hostname.contains("configurationServer"))
 
               val ccpServers = ccpServersDetails match {
-                case addresses:Map[String, ScopeNodeMetadata] if (addresses.size > 0) => addresses.values.toList
+                case addresses: Map[String, ScopeNodeMetadata] if (addresses.size > 0) => addresses.values.toList
                 case _ => List()
               }
               ccpServers.map(
-                server => super.deleteVmsFromConfigurationServer(server.copy(privateKey = Some(key)) ,instance.machineIds, systemUserId)
+                server => super.deleteVmsFromConfigurationServer(server.copy(privateKey = Some(key)), instance.machineIds, systemUserId)
               )
             }
             case None => logWarn("Can't delete from /etc/hosts without private key of configuration server,")
@@ -171,7 +170,7 @@ class SystemsResources extends Slf4jLogger with BasicResource {
         case None =>
       }
 
-      instance.accessPoints.map( ap => {
+      instance.accessPoints.map(ap => {
         ap.url match {
           case domainPattern(dnsName) => super.deleteDnsRecord(dnsName)
           case _ =>
@@ -182,12 +181,12 @@ class SystemsResources extends Slf4jLogger with BasicResource {
 
       val isFoundationInstance = ScopeUtils.configuration.getString("foundation.name").equals(instance.product.productName)
       if (isFoundationInstance) {
-    	  // Delete foundation info from system
-    	  scopedb.updateSystem(System(system.systemId, system.password, None)) 
+        // Delete foundation info from system
+        scopedb.updateSystem(System(system.systemId, system.password, None))
       }
-      super.deleteInstanceVMs(instance.machineIds)
-	  logInfo("deleting instance with Id: {} for system: {}", instanceId, systemUserId)
-	  scopedb.deleteInstance(systemUserId, instanceId)
+      super.deleteInstanceVMs(instance.machineIds, Some(instance))
+      logInfo("deleting instance with Id: {} for system: {}", instanceId, systemUserId)
+      scopedb.deleteInstance(systemUserId, instanceId)
     }
 
   }
@@ -241,11 +240,11 @@ class ProductsResource extends Slf4jLogger with BasicResource {
   @RequestMapping(value = Array[String]("/{productName}-{productVersion}/"), method = Array[RequestMethod](RequestMethod.PUT), consumes = Array[String]("application/json"))
   @ResponseStatus(HttpStatus.CREATED)
   def createProduct(@PathVariable("productName") productName: String, @PathVariable("productVersion") productVersion: String,
-                              @RequestBody product: Product) {
-  
-      ScopeUtils.time(logger, "createProduct-rest") {
+                    @RequestBody product: Product) {
+
+    ScopeUtils.time(logger, "createProduct-rest") {
       logInfo("creating product {}-{}", productName, productVersion)
-      scopedb.createProduct(product.copy(id=s"$productName-$productVersion"))
+      scopedb.createProduct(product.copy(id = s"$productName-$productVersion"))
     }
   }
 
