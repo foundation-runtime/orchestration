@@ -17,6 +17,7 @@
 package com.cisco.oss.foundation.orchestration.scope.utils
 
 import com.cisco.oss.foundation.configuration.ConfigUtil
+import com.cisco.oss.foundation.orchestration.scope.ScopeConstants
 import com.cisco.oss.foundation.orchestration.scope.model.{InstallationPart, Node, ScopeNodeMetadata}
 import com.cisco.oss.foundation.orchestration.scope.scripting.ScalaScriptEngineWrapper
 import com.cisco.oss.foundation.orchestration.scope.provision.exception.ScopeProvisionException
@@ -199,7 +200,7 @@ class VMUtils extends Slf4jLogger {
 
   def vmMetaData(id: String) = {
     val nodeMetadata: NodeMetadata = computeServiceContext.getComputeService.getNodeMetadata(id)
-    JcloudsNodeMetaDataToScopeNodeMetaData(nodeMetadata, "STARTED")
+    JcloudsNodeMetaDataToScopeNodeMetaData(nodeMetadata, ScopeConstants.STARTED)
   }
 
   def runScriptOnMatchingNodes(runScript: String, scriptName: String, groupName: Option[String], partialHostname: Option[String] = None, tagsToSearch: Option[List[String]] = None, privateKey: String) = {
@@ -351,7 +352,7 @@ class VMUtils extends Slf4jLogger {
   def findVM(vmID: String) = {
     val nodeMetaData = computeServiceContext.getComputeService.listNodesByIds(Set(vmID))
 
-    val nodeData = JcloudsNodeMetaDataToScopeNodeMetaData(nodeMetaData.head, "STARTED")
+    val nodeData = JcloudsNodeMetaDataToScopeNodeMetaData(nodeMetaData.head, ScopeConstants.STARTED)
     Some(nodeData)
   }
 
