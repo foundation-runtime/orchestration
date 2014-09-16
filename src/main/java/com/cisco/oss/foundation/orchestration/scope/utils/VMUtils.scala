@@ -205,7 +205,6 @@ class VMUtils extends Slf4jLogger {
   def runScriptOnMatchingNodes(runScript: String, scriptName: String, groupName: Option[String], partialHostname: Option[String] = None, tagsToSearch: Option[List[String]] = None, privateKey: String) = {
     val filter = new Predicate[NodeMetadata] {
       def apply(nodeMetaData: NodeMetadata): Boolean = {
-        // FIXME: AWS doesn't return groups
         val isInGroup = getGroupFromNodeMetadata(nodeMetaData) match {
           case group: String => {
             group.equalsIgnoreCase(groupName.getOrElse(throw new IllegalArgumentException("Group name could not be empty.")))
@@ -354,6 +353,15 @@ class VMUtils extends Slf4jLogger {
 
     val nodeData = JcloudsNodeMetaDataToScopeNodeMetaData(nodeMetaData.head, "STARTED")
     Some(nodeData)
+  }
+
+  def listNodesByTags(tags: Set[String]) = {
+    val filter = new Predicate[ComputeMetadata] {
+      def apply(computeMetadata: ComputeMetadata): Boolean = {
+         computeMetadata.getTags.containsAll(tags)
+      }
+    }
+    computeServiceContext.getComputeService.listNodesDetailsMatching(filter).map((node) => this.JcloudsNodeMetaDataToScopeNodeMetaData(node, node.getStatus.toString))
   }
 
 
