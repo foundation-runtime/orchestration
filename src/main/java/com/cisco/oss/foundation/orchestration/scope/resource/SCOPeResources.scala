@@ -16,20 +16,17 @@
 
 package com.cisco.oss.foundation.orchestration.scope.resource
 
-import org.springframework.stereotype.Controller
-import com.wordnik.swagger.annotations.Api
-import org.springframework.web.bind.annotation._
-import org.apache.commons.lang.StringUtils
-import com.cisco.oss.foundation.orchestration.scope.utils._
-import scala.collection.JavaConversions._
 import java.util.HashSet
-import scala.concurrent._
-import com.cisco.oss.foundation.orchestration.scope.model._
+
+import com.cisco.oss.foundation.orchestration.scope.model.{Instance, Product, System, _}
+import com.cisco.oss.foundation.orchestration.scope.utils._
+import com.wordnik.swagger.annotations.Api
+import org.apache.commons.lang.StringUtils
 import org.springframework.http.HttpStatus
-import com.cisco.oss.foundation.orchestration.scope.model.Instance
-import scala.Some
-import com.cisco.oss.foundation.orchestration.scope.model.Product
-import com.cisco.oss.foundation.orchestration.scope.model.System
+import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation._
+
+import scala.collection.JavaConversions._
 import scala.collection.immutable.Map
 
 @Api(value = "systems", description = "systems rest api") // Swagger annotation
@@ -202,15 +199,23 @@ class SystemsResources extends Slf4jLogger with BasicResource {
     ScopeUtils.time(logger, "deleteSystem-rest") {
       logInfo("deleting system: {}", systemId)
       val system = scopedb.findSystem(systemId)
-      val instance = system.getOrElse(throw new SystemNotFound).foundation.getOrElse(null);
-      if (instance != null) {
-        super.deleteInstanceVMs(instance.machineIds)
-        logInfo("deleting foundation instance with Id: {} for system: {}", instance.instanceId, systemId)
-        val instanceFromDB = scopedb.findInstance(instance.instanceId).getOrElse(null)
-        if (instanceFromDB != null) {
-        	scopedb.deleteInstance(systemId, instance.instanceId)
+      system match {
+        case Some(s) => {
+          s.foundation match {
+            case Some(instance) => {
+              super.deleteInstanceVMs(instance.machineIds)
+              logInfo("deleting foundation instance with Id: {} for system: {}", instance.instanceId, systemId)
+              val instanceFromDB = scopedb.findInstance(instance.instanceId).getOrElse(null)
+              if (instanceFromDB != null) {
+                scopedb.deleteInstance(systemId, instance.instanceId)
+              }
+            }
+            case None =>
+          }
         }
+        case None => throw new SystemNotFound
       }
+
       scopedb deleteSystem (systemId)
     }
   }

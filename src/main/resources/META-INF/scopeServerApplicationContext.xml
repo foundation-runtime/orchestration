@@ -31,7 +31,6 @@
         </mvc:message-converters>
     </mvc:annotation-driven>
 
-
     <bean id="mapper" class="com.cisco.oss.foundation.orchestration.scope.model.ObjectMapperFactory"/>
 
     <context:annotation-config/>
