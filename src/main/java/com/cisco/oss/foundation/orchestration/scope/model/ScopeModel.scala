@@ -61,7 +61,7 @@ case class Service(@Key("_id") @(Id@field) id: String, productName: String, prod
 
 case class HostDetails(hostName: String, hostId: String, hostIp: String)
 
-case class Instance(@Key("_id") @(Id@field) instanceId: String, systemId: String, instanceName: String, status: Option[String], details: Option[String], product: Product, machineIds: Map[String, ScopeNodeMetadata], accessPoints: List[AccessPoint], deletable: Option[Boolean], rsaKeyPair: Map[String, String] = Map[String, String]())
+case class Instance(@Key("_id") @(Id@field) instanceId: String, systemId: String, instanceName: String, status: Option[String], details: Option[String], product: Product, machineIds: Map[String, ScopeNodeMetadata], accessPoints: List[AccessPoint], deletable: Option[Boolean], rsaKeyPair: Map[String, String] = Map[String, String](), preDeleteNodesScript: Option[List[PreDeleteNode]] = None)
 
 case class AccessPoint(name: String, url: String)
 
@@ -104,7 +104,7 @@ case class ExposeAccessPoints(accessPoints: List[AccessPoint])
 
 case class FileResource(name: String, path: String)
 
-case class DeploymentModelCapture(schemaVersion: String, resources: Option[List[FileResource]], installNodes: InstallNodes, setupProvisioningEnv: Boolean, announceHostNames: Boolean, installModules: Map[String, InstallModules], exposeAccessPoints: ExposeAccessPoints)
+case class DeploymentModelCapture(schemaVersion: String, resources: Option[List[FileResource]], installNodes: InstallNodes, setupProvisioningEnv: Boolean, announceHostNames: Boolean, installModules: Map[String, InstallModules], exposeAccessPoints: ExposeAccessPoints, preDeleteNodesScript: Option[List[PreDeleteNode]] = None)
 
 case class ProvisionRequest(tenantId: String, instanceId: Option[String])
 
@@ -135,3 +135,5 @@ case class ScopeNodeMetadata(val id: String, val hostname: String, fqdn: Option[
                              val privateAddresses: Set[String], val publicAddresses: Set[String], group: String,
                              val tags: Set[String], val url: String, provisionStatus: String)
 
+case class PreDeleteNode(val nodes: List[String],
+                         val script: String)
