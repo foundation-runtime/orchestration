@@ -38,7 +38,6 @@ import org.springframework.beans.factory.annotation.Autowired
 
 import scala.collection.JavaConversions._
 import scala.collection.immutable.{HashMap, Map, SortedMap}
-import scala.collection.mutable
 import scala.concurrent._
 import scala.concurrent.duration.Duration
 
@@ -222,7 +221,22 @@ trait BasicResource extends Slf4jLogger {
 
     loadResources(resources)
 
-    val newInstance = instance.copy(status = Some(STARTING), accessPoints = instance.accessPoints ::: model.exposeAccessPoints.accessPoints)
+    val preDeleteNodesScript = instance.preDeleteNodesScript match {
+      case Some(scripts) => {
+        model.preDeleteNodesScript match {
+          case Some(newScripts) => Some(scripts ::: newScripts)
+          case None => Some(scripts)
+        }
+      }
+      case None => {
+        model.preDeleteNodesScript match {
+          case Some(newScripts) => Some(newScripts)
+          case None => None
+        }
+      }
+    }
+
+    val newInstance = instance.copy(status = Some(STARTING), accessPoints = instance.accessPoints ::: model.exposeAccessPoints.accessPoints, preDeleteNodesScript = preDeleteNodesScript)
 
     scopedb.updateInstance(newInstance)
 
@@ -614,6 +628,35 @@ trait BasicResource extends Slf4jLogger {
   }
 
   def deleteInstanceVMs(machineIds: Map[String, ScopeNodeMetadata], instance: Option[Instance] = None) = {
+    try {
+      instance match {
+        case Some(ins) => {
+          ins.preDeleteNodesScript match {
+            case Some(scripts) => {
+              val privateKey = ins.rsaKeyPair.getOrElse("private", throw new Exception(ScopeErrorMessages.NO_RSA + "for INSTANCE."))
+              scripts.foreach {
+                case s => {
+                  val builder = new ScriptBuilder()
+                  builder.addStatement(exec(s.script))
+
+                  s.nodes.par.foreach {
+                    case name => {
+                      vmUtils.runScriptOnMatchingNodes(builder.render(OsFamily.UNIX), "preDelete", None, Some(name), privateKey = privateKey)
+                    }
+                  }
+                }
+              }
+            }
+            case None => logInfo(s"No preDelete script for instance: ${ins.instanceName}")
+          }
+        }
+        case None => logWarn("instance does NOT supply cant run preDeleteScripts!")
+      }
+    } catch {
+      case _: Throwable =>
+    }
+
+
     machineIds.values match {
       case vals: Iterable[ScopeNodeMetadata] if vals.size > 0 => {
         vals.foreach((hostDetails) => {
@@ -624,7 +667,7 @@ trait BasicResource extends Slf4jLogger {
       case _ => {
         instance match {
           case Some(ins) => {
-            val tags = Set(ins.instanceId,ins.product.productName,ins.systemId)
+            val tags = Set(ins.instanceId, ins.product.productName, ins.systemId)
             val nodesByTags = vmUtils.listNodesByTags(tags)
             nodesByTags.foreach((hostDetails) => {
               logInfo("Deleting vm: {} id: {}", hostDetails.hostname, hostDetails.id)
