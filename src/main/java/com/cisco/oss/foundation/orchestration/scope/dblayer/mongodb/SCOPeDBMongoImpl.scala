@@ -34,9 +34,6 @@ import scala.actors.threadpool.locks.ReentrantLock
 @Component
 class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
 
-  //  @Autowired
-  //  var mongoOp: MongoOperations = _
-
   val host = ScopeUtils.configuration.getString("mongodb.host", "localhost")
   val port = ScopeUtils.configuration.getInt("mongodb.port", 27017)
 
@@ -47,6 +44,16 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
   val productsdb = scopedb("products")
   val servicesdb = scopedb("services")
   val instancesdb = scopedb("instances")
+
+//  instancesdb.find().map(dbObj => grater[Instance].asObject(dbObj)).foreach{
+//    case instance => {
+//      val id = instance.instanceId
+//      val system = instance.systemId
+//      val lock: ReentrantLock = new ReentrantLock(true)
+//      instanceLockMap.put(system + "-" + id, Some(lock))
+//    }
+//  }
+
 
   def findAllSystems: util.List[System] = {
 
@@ -61,14 +68,12 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
   def createSystem(system: System) = {
     ScopeUtils.time(logger, "createSystem-db") {
       systemsdb.insert(grater[System].asDBObject(system))
-      //      mongoOp.save(system, "systems")
     }
   }
 
   def updateSystem(system: System) = {
     ScopeUtils.time(logger, "updateSystem-db") {
       systemsdb.update(MongoDBObject("_id" -> system.systemId), grater[System].asDBObject(system))
-      //      mongoOp.save(system, "systems")
     }
   }
 
@@ -79,19 +84,6 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
         case None => None
         case Some(system) => Some(grater[System].asObject(system))
       }
-
-
-      //      val query1 = new BasicQuery("{ '_id' : '" + systemId + "'}");
-      //      val result = mongoOp.find(query1, classOf[System], "systems")
-      //
-      //      if (result.size > 1) {
-      //        throw new IllegalArgumentException("there shouldn't be more than one system for id: " + systemId)
-      //      } else if (!result.isEmpty()) {
-      //        logDebug("System was found")
-      //        Some(result.get(0))
-      //      } else {
-      //        None
-      //      }
     }
 
   }
@@ -101,7 +93,6 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
     ScopeUtils.time(logger, "deleteSystem-db") {
       val system = findSystem(systemId).getOrElse(throw new SystemNotFound)
       systemsdb.remove(MongoDBObject("_id" -> system.systemId))
-      //      mongoOp.remove(system.getOrElse(throw new SystemNotFound), "systems")
     }
   }
 
@@ -120,7 +111,6 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
           case Some(inst) => {
             if (inst.systemId == systemId) {
               instancesdb.remove(MongoDBObject("_id" -> instance.getOrElse(throw new InstanceNotFound).instanceId))
-              //            mongoOp.remove(inst, "instances")
             } else {
               throw new IllegalArgumentException("instance id: " + instanceId + " is not associated with system id: " + systemId + ". Instead it has system id of: " + inst.systemId)
             }
@@ -149,17 +139,6 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
         case None => None
         case Some(p) => Some(grater[Product].asObject(p))
       }
-
-      //      // logInfo("""get product details for product "{}" and version "{}"""", productName, productVersion)
-      //      val query1 = new BasicQuery("{ productName : '" + productName + "', productVersion : '" + productVersion + "' }");
-      //      val result = mongoOp.find(query1, classOf[Product], "products")
-      //
-      //      if (result.size > 1)
-      //        throw new IllegalArgumentException("there shouldn't be more than one product under this product name and version")
-      //      else if (!result.isEmpty())
-      //        Some(result.get(0))
-      //      else
-      //        None
     }
   }
 
@@ -170,8 +149,6 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
       val prods = new util.ArrayList[Product]()
       for (prod <- all) prods.add(grater[Product].asObject(prod))
       prods
-      //      mongoOp.findAll(classOf[Product], "products")
-
     }
   }
 
@@ -180,7 +157,6 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
     ScopeUtils.time(logger, "deleteProduct-db") {
       val product = getProductDetails(productName, productVersion).getOrElse(throw new ProductNotFound)
       productsdb.remove(MongoDBObject("_id" -> product.id))
-      //      mongoOp.remove(product.getOrElse(throw new ProductNotFound), "products")
     }
   }
 
@@ -216,25 +192,12 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
 
     ScopeUtils.time(logger, "findInstance-db") {
 
-
       logTrace("searching for instance: {}", instanceId)
 
       instancesdb.findOneByID(instanceId) match {
         case None => None
         case Some(instance) => Some(grater[Instance].asObject(instance))
       }
-
-      //      val query1 = new BasicQuery("{ '_id' : '" + instanceId + "'}");
-      //      val result = mongoOp.find(query1, classOf[Instance], "instances")
-      //
-      //      if (result.size > 1) {
-      //        throw new IllegalArgumentException("there shouldn't be more than one instance for id: " + instanceId)
-      //      } else if (!result.isEmpty()) {
-      //        logDebug("Instance was found")
-      //        Some(result.get(0))
-      //      } else {
-      //        None
-      //      }
     }
 
   }
@@ -249,20 +212,6 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
       for (instance <- instances) instanceList.add(grater[Instance].asObject(instance))
       if (instanceList.isEmpty) None else Some(instanceList)
 
-      //      instancesdb.findOneByID(instanceId) match {
-      //        case None => None
-      //        case Some(instance) => Some(grater[Instance].asObject(instance))
-      //      }
-      //
-      //      val query1 = new BasicQuery("{ 'systemId' : '" + systemId + "'}");
-      //      val result = mongoOp.find(query1, classOf[Instance], "instances")
-      //
-      //      if (!result.isEmpty()) {
-      //        logDebug("Instances were found")
-      //        Some(result)
-      //      } else {
-      //        None
-      //      }
     }
 
   }
@@ -277,7 +226,6 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
       val lock: ReentrantLock = new ReentrantLock(true)
       instanceLockMap.put(system + "-" + id, Some(lock))
       instancesdb.update(MongoDBObject("_id" -> instance.instanceId), grater[Instance].asDBObject(instance), true)
-      //      mongoOp.save(instance, "instances")
     }
   }
 
@@ -291,7 +239,6 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
       }
       try {
         instancesdb.update(MongoDBObject("_id" -> instance.instanceId), grater[Instance].asDBObject(instance))
-        //      mongoOp.save(instance, "instances")
       }
       finally {
         lock match {
@@ -307,7 +254,6 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
     ScopeUtils.time(logger, "createProduct-db") {
       try {
         productsdb.insert(grater[Product].asDBObject(product))
-        //          mongoOp.insert(product, "products")
       } catch {
         case e: DuplicateKey => throw new ProductAlreadyExists()
       }
@@ -318,14 +264,12 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
   def updateProduct(product: Product) = {
     ScopeUtils.time(logger, "updateProduct-db") {
       productsdb.update(MongoDBObject("_id" -> product.id), grater[Product].asDBObject(product))
-      //      mongoOp.save(product, "products")
     }
   }
 
   def createService(service: Service): Unit = {
     ScopeUtils.time(logger, "createService-db") {
       servicesdb.insert(grater[Service].asDBObject(service))
-      //      mongoOp.save(service, "services")
     }
   }
 
@@ -336,26 +280,12 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
         case None => None
         case Some(service) => Some(grater[Service].asObject(service))
       }
-
-
-      //      val query1 = new BasicQuery("{ '_id' : '" + id + "'}");
-      //      val result = mongoOp.find(query1, classOf[Service], "services")
-      //
-      //      if (result.size > 1) {
-      //        throw new IllegalArgumentException("there shouldn't be more than one service for id: " + id)
-      //      } else if (!result.isEmpty()) {
-      //        logDebug("Service was found")
-      //        Some(result.get(0))
-      //      } else {
-      //        None
-      //      }
     }
   }
 
   def updateMachineStatus(instanceId: String, machineName: String, status: String): Unit = {
     ScopeUtils.time(logger, "updateMachineStatus-db") {
       val q = MongoDBObject("_id" -> instanceId)
-     // q.put("machineIds", machineName)
       val u = $set(s"machineIds.$machineName.provisionStatus" -> status)
       instancesdb.update(q, u)
     }

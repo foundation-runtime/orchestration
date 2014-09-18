@@ -89,16 +89,16 @@ trait Module{
   val moduleType: String = if (this.isInstanceOf[PuppetModule]) "puppet" else "plugin"
   val nodes: List[String] = List[String]()
 }
-case class PuppetModule(name: String, version: String = "0.0.0",  ccp: Option[Ccp], file: Option[ConfigurationFile], deployFile: Option[DeployFile]) extends Module
+case class PuppetModule(name: String, version: String = "0.0.0",  configurationServer: Option[ConfigurationSection], file: Option[ConfigurationFile], deployFile: Option[DeployFile]) extends Module
 case class PluginModule(className: String, configuration: String) extends Module
 
 case class DeployFile(content: String, destinationPath: String, owner: String, group: String, mode:String)
 
-case class Ccp(processName: String, baseConfigProperties: Collection[String], additionalValues: Collection[CcpConfig])
+case class ConfigurationSection(processName: String, baseConfigProperties: Collection[String], additionalValues: Collection[KeyValueConfig])
 
-case class ConfigurationFile(baseConfigProperties: Option[Collection[String]], additionalValues: Collection[CcpConfig])
+case class ConfigurationFile(baseConfigProperties: Option[Collection[String]], additionalValues: Collection[KeyValueConfig])
 
-case class CcpConfig(key: String, value: String)
+case class KeyValueConfig(key: String, value: String)
 
 case class ExposeAccessPoints(accessPoints: List[AccessPoint])
 

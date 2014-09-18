@@ -103,7 +103,7 @@ class materializerBase(object):
                     "value":"27017"
                 },
                 {
-                    "key":"ccp::enabled",
+                    "key":"fileSection::enabled",
                     "value":"false"
                 },
                 {
@@ -121,12 +121,12 @@ class materializerBase(object):
             ]
         }
         '''
-        ccp = dict()
+        fileSection = dict()
 
-        ccp['baseConfigProperties'] = baseConfigProperties
-        ccp['additionalValues'] = additionalValues
+        fileSection['baseConfigProperties'] = baseConfigProperties
+        fileSection['additionalValues'] = additionalValues
 
-        return ccp
+        return fileSection
 
     def createCaptureTemplate(self):
         '''
@@ -141,6 +141,7 @@ class materializerBase(object):
         schema['setupProvisioningEnv'] = True
         schema['announceHostNames'] = True
         schema['installModules'] = dict()
+        schema['preDeleteNodesScript'] = list()
         schema['exposeAccessPoints'] = dict()
 
         return schema
@@ -191,7 +192,7 @@ class materializerBase(object):
         node['network'] = networks
         return node
 
-    def createCcp(self, processName, baseConfigProperties = list(), additionalValues = dict()):
+    def createConfigurationServer(self, processName, baseConfigProperties = list(), additionalValues = dict()):
         '''
         Sample:
         {
@@ -219,7 +220,7 @@ class materializerBase(object):
 
         return ccp
 
-    def createModule(self, name, version, nodes, ccp = None, file = None):
+    def createModule(self, name, version, nodes, configurationServer = None, file = None):
         '''
         Sample:
         {
@@ -248,8 +249,8 @@ class materializerBase(object):
         module['name'] = name
         module['version'] = version
         module['nodes'] = nodes
-        if ccp:
-            module['ccp'] = ccp
+        if configurationServer:
+            module['configurationServer'] = configurationServer
         if file:
             module['file'] = file
 

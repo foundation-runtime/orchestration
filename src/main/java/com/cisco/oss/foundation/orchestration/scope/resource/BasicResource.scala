@@ -163,7 +163,10 @@ trait BasicResource extends Slf4jLogger {
           }
         }
       }
-      case false =>
+      case false => {
+        instance = updateInstanceStatusDetails(newInstance, "Start deploying. (without ScopeFoundation)")
+        product = deployProduct(product, newInstance, system)
+      }
     }
 
 
@@ -633,7 +636,8 @@ trait BasicResource extends Slf4jLogger {
         case Some(ins) => {
           ins.preDeleteNodesScript match {
             case Some(scripts) => {
-              val privateKey = ins.rsaKeyPair.getOrElse("private", throw new Exception(ScopeErrorMessages.NO_RSA + "for INSTANCE."))
+              logInfo("Running preDelete script.")
+              val privateKey = ins.rsaKeyPair.getOrElse("private", throw new Exception(s"${ScopeErrorMessages.NO_RSA} for INSTANCE ( ${ins.instanceName} )."))
               scripts.foreach {
                 case s => {
                   val builder = new ScriptBuilder()
@@ -650,7 +654,7 @@ trait BasicResource extends Slf4jLogger {
             case None => logInfo(s"No preDelete script for instance: ${ins.instanceName}")
           }
         }
-        case None => logWarn("instance does NOT supply cant run preDeleteScripts!")
+        case None => logWarn("instance does NOT supply can't run preDeleteScripts!")
       }
     } catch {
       case _: Throwable =>
