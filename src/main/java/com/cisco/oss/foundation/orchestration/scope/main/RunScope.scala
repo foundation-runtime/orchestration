@@ -17,6 +17,8 @@
 package com.cisco.oss.foundation.orchestration.scope.main
 
 import java.lang.Thread.UncaughtExceptionHandler
+import java.lang.reflect.Field
+import java.util.concurrent.ConcurrentHashMap
 import java.util.{Collections, EventListener}
 import javax.servlet.{Filter, Servlet}
 
@@ -26,6 +28,8 @@ import com.cisco.oss.foundation.orchestration.scope.utils.{ScopeUtils, Slf4jLogg
 import com.google.common.collect.{ArrayListMultimap, ListMultimap}
 import org.apache.log4j.PropertyConfigurator
 import org.apache.log4j.helpers.Loader
+import org.eclipse.jetty.server.Server
+import org.eclipse.jetty.server.handler.{ContextHandler, ResourceHandler, ContextHandlerCollection}
 import org.springframework.web.context.ContextLoaderListener
 import org.springframework.web.context.support.XmlWebApplicationContext
 import org.springframework.web.servlet.DispatcherServlet
@@ -74,9 +78,56 @@ class RunScope extends Slf4jLogger {
       uiWebConfig.setConfigLocation("classpath*:/META-INF/scopeUIApplicationContext.xml")
       uiWebConfig.registerShutdownHook()
       val uiServletMap: ArrayListMultimap[String, Servlet] = ArrayListMultimap.create()
-      uiServletMap.put("/*", new DispatcherServlet(uiWebConfig));
+      //uiServletMap.put("/*", new DispatcherServlet(uiWebConfig));
       JettyHttpServerFactory.INSTANCE.startHttpServer("scope-ui", uiServletMap, uiFilterMap, Collections.singletonList[EventListener](new ContextLoaderListener(uiWebConfig)))
+      staticFileServer()
     }
+  }
+
+  def staticFileServer(): Unit = {
+    val serversField: Field = JettyHttpServerFactory.INSTANCE.getClass.getDeclaredField("servers")
+    serversField.setAccessible(true)
+    val serverMap: ConcurrentHashMap[String, Server] =  serversField.get(JettyHttpServerFactory.INSTANCE).asInstanceOf[ConcurrentHashMap[String, Server]]
+
+    val puppetBaseDir = ScopeUtils.configuration.getString("scope-ui.scope-puppet.puppetBaseDir", "/etc/puppet/scope_puppet/")
+    val yumBaseDir = ScopeUtils.configuration.getString("scope-ui.scope-base.yum.baseDir", "/opt/cisco/scopeData/scope-base/")
+    val productsBaseDir = ScopeUtils.configuration.getString("scope-ui.scope-products.yum.baseDir", "/opt/cisco/scopeData/products/")
+    val uiBaseDir = ScopeUtils.configuration.getString("scope-ui.baseDir", "/opt/cisco/scope/ui")
+
+    val scopeBasePuppetContext = new ContextHandler();
+    val scopeBaseYumContext = new ContextHandler();
+    val scopeUiContext = new ContextHandler();
+    val productsBaseContext = new ContextHandler();
+
+    scopeBasePuppetContext.setContextPath("/scope-base/puppet/")
+    scopeUiContext.setContextPath("/scope-ui/")
+    scopeBaseYumContext.setContextPath("/scope-base/yum/")
+    productsBaseContext.setContextPath("/scope-products/")
+
+    val scopeBasePuppetResourceHandler: ResourceHandler = new ResourceHandler
+    scopeBasePuppetResourceHandler.setDirectoriesListed(true)
+    scopeBasePuppetResourceHandler.setResourceBase(puppetBaseDir)
+    scopeBasePuppetContext.setHandler(scopeBasePuppetResourceHandler)
+
+    val scopeUiResourceHandler: ResourceHandler = new ResourceHandler
+    scopeUiResourceHandler.setDirectoriesListed(true)
+    scopeUiResourceHandler.setResourceBase(uiBaseDir)
+    scopeUiContext.setHandler(scopeUiResourceHandler)
+
+    val scopeBaseYumResourceHandler: ResourceHandler = new ResourceHandler
+    scopeBaseYumResourceHandler.setDirectoriesListed(true)
+    scopeBaseYumResourceHandler.setResourceBase(yumBaseDir)
+    scopeUiContext.setHandler(scopeBaseYumResourceHandler)
+
+    val productsBaseResourceHandler: ResourceHandler = new ResourceHandler
+    productsBaseResourceHandler.setDirectoriesListed(true)
+    productsBaseResourceHandler.setResourceBase(productsBaseDir)
+    scopeUiContext.setHandler(productsBaseResourceHandler)
+
+
+    val contextHandlerCollection: ContextHandlerCollection = serverMap.get("scope-ui").getHandler().asInstanceOf[ContextHandlerCollection]
+    contextHandlerCollection.addHandler(scopeBasePuppetContext)
+    contextHandlerCollection.addHandler(scopeUiContext)
   }
 
   def stop() {

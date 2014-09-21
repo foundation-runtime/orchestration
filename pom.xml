@@ -590,6 +590,17 @@
                                     </sources>
                                 </mapping>
                                 <mapping>
+                                    <directory>/etc/puppet/scope-puppet</directory>
+                                    <username>${rpmUsername}</username>
+                                    <groupname>${rpmGroupname}</groupname>
+                                    <filemode>0755</filemode>
+                                    <sources>
+                                        <source>
+                                            <location>src/main/rpm/scope_puppet</location>
+                                        </source>
+                                    </sources>
+                                </mapping>
+                                <mapping>
                                     <directory>/opt/cisco/scopeData/scope-base/5/x86_64</directory>
                                     <username>${rpmUsername}</username>
                                     <groupname>${rpmGroupname}</groupname>

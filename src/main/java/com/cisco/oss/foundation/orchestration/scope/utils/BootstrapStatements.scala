@@ -107,7 +107,7 @@ class BootstrapStatements(val networkAddress: List[(SubnetUtils, String)], val b
     statements.add(exec("mv /etc/yum.repos.d/*.repo /etc/yum.repos.d/save/"))
     statements.add(exec("echo '[scope]' >> /etc/yum.repos.d/scope.repo"))
     statements.add(exec("echo 'name=scope_repo' >> /etc/yum.repos.d/scope.repo"))
-    statements.add(exec(s"echo 'baseurl=${baseRepoUrl}yum/$osVersion/" + "$basearch' >> /etc/yum.repos.d/scope.repo"))
+    statements.add(exec(s"echo 'baseurl=${baseRepoUrl}/scope-base/yum/$osVersion/" + "$basearch' >> /etc/yum.repos.d/scope.repo"))
     statements.add(exec("echo 'enabled=1' >> /etc/yum.repos.d/scope.repo"))
     statements.add(exec("echo 'gpgcheck=0' >> /etc/yum.repos.d/scope.repo"))
     statements.add(exec("yum -y install ruby"))

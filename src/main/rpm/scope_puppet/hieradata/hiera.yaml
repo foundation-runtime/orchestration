@@ -1,0 +1,12 @@
+---
+:hierarchy:
+    - override
+    - host/%{::hostname}
+    - role/%{::vmrole}
+    - env/%{::environment}
+    - common
+:backends:
+    - json
+:json:
+    :datadir: "/etc/hieradata"
+    
