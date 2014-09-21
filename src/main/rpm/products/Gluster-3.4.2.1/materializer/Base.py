@@ -146,6 +146,13 @@ class materializerBase(object):
 
         return schema
 
+    def createPreDeleteNodesScript(self, nodes, script):
+        scriptSection = dict()
+        scriptSection['nodes'] = nodes
+        scriptSection['script'] = script
+        return scriptSection
+        pass
+
     def createNode(self, name, internal = True, public = False):
         '''
         sample:

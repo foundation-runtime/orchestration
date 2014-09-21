@@ -1,1 +1,1 @@
-python materializerExample.py $*
+python materializerExample.py $* 2>/tmp/materializer_`date +%d%m%Y_%H%M%S`.stderr

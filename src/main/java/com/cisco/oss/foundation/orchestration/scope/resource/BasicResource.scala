@@ -645,7 +645,11 @@ trait BasicResource extends Slf4jLogger {
 
                   s.nodes.par.foreach {
                     case name => {
-                      vmUtils.runScriptOnMatchingNodes(builder.render(OsFamily.UNIX), "preDelete", None, Some(name), privateKey = privateKey)
+                      machineIds.get(name) match {
+                        case Some(n) => vmUtils.runScriptOnNode(builder.render(OsFamily.UNIX), "preDelete", n, privateKey)
+                        case None =>  vmUtils.runScriptOnMatchingNodes(builder.render(OsFamily.UNIX), "preDelete", None, Some(name), privateKey = privateKey)
+                      }
+
                     }
                   }
                 }

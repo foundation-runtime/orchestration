@@ -22,7 +22,7 @@ import com.cisco.oss.foundation.orchestration.scope.utils.ScopeUtils
  * Created by mgoldshm on 4/10/14.
  */
 object ScopeProvisionModel {
-  final val FOUNDATION_PUPPET_PATH: String = "/etc/puppet/chpuppet"
+  final val FOUNDATION_PUPPET_PATH: String = "/etc/puppet/scope_puppet"
   final val PRODUCT_PUPPET_PATH: String = "/etc/puppet/prodpuppet"
 }
 
@@ -33,6 +33,6 @@ class ProductRepoInfo(productUrl: String) {
   val productPuppetRepoUrl = s"${productUrl}prodpuppet/"
   val productYumRepoUrl = s"${productUrl}yum/"
   val productMaterializerUrl = s"${productUrl}materializer/"
-  val basePuppetRepoUrl = s"${ScopeUtils.configuration.getString("basePuppetRepoUrl")}puppet/"
+  val basePuppetRepoUrl = s"${ScopeUtils.configuration.getString("basePuppetRepoUrl")}scope-base/puppet/"
 }
 
