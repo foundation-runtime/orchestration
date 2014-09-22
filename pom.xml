@@ -579,7 +579,7 @@
                                     <filemode>0755</filemode>
                                 </mapping>
                                 <mapping>
-                                    <directory>/opt/cisco/scopeData/products</directory>
+                                    <directory>/opt/cisco/scopeData/products/Gluster-3.4.2.1</directory>
                                     <username>${rpmUsername}</username>
                                     <groupname>${rpmGroupname}</groupname>
                                     <filemode>0755</filemode>
@@ -590,7 +590,7 @@
                                     </sources>
                                 </mapping>
                                 <mapping>
-                                    <directory>/etc/puppet/scope-puppet</directory>
+                                    <directory>/opt/cisco/scopeData/scope-puppet</directory>
                                     <username>${rpmUsername}</username>
                                     <groupname>${rpmGroupname}</groupname>
                                     <filemode>0755</filemode>
@@ -656,7 +656,7 @@
                                     <sources>
                                         <source>
                                             <location>
-                                                ${project.build.directory}/${project.artifactId}-${project.version}.jar
+                                                /${project.build.directory}/${project.artifactId}-${project.version}.jar
                                             </location>
                                         </source>
                                     </sources>
@@ -710,11 +710,6 @@
                                     <username>${rpmUsername}</username>
                                     <groupname>${rpmGroupname}</groupname>
                                     <filemode>0755</filemode>
-                                    <sources>
-                                        <source>
-                                            <location>src/main/rpm/ui</location>
-                                        </source>
-                                    </sources>
                                 </mapping>
                                 <mapping>
                                     <directory>/opt/cisco/installed/${rpmSoftwareName}-${project.version}/ui
@@ -722,6 +717,11 @@
                                     <username>${rpmUsername}</username>
                                     <groupname>${rpmGroupname}</groupname>
                                     <filemode>0755</filemode>
+                                    <sources>
+                                        <source>
+                                            <location>src/main/rpm/ui</location>
+                                        </source>
+                                    </sources>
                                 </mapping>
                                 <mapping>
                                     <directory>/opt/cisco/installed/${rpmSoftwareName}-${project.version}/licenses
@@ -763,6 +763,7 @@
                             </mappings>
                             <requires>
                                 <require>createrepo</require>
+                                <require>wget</require>
                                 <require>jdk64 = 2000:1.7.0_05</require>
                             </requires>
                             <group>Application/CISCO</group>

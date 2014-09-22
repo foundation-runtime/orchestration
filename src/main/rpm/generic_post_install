@@ -103,7 +103,7 @@ if [ "$1" == "1" ]; then
 			fi
 
 			if [ ${createInitdLink} -eq 1 ]; then
-				for  initScriptFullPath in `grep -l "NDS Generic Init Script" ${RPMPREFIX}/${APPNAME}/utils/*`
+				for  initScriptFullPath in `grep -l "CISCO Generic Init Script" ${RPMPREFIX}/${APPNAME}/utils/*`
 				do
 					initScript=`basename ${initScriptFullPath}`
 					if [ -h ${INITD_LNK}/${initScript} ]; then
