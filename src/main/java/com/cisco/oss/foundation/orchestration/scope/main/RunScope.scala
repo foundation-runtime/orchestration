@@ -112,22 +112,25 @@ class RunScope extends Slf4jLogger {
     val scopeUiResourceHandler: ResourceHandler = new ResourceHandler
     scopeUiResourceHandler.setDirectoriesListed(true)
     scopeUiResourceHandler.setResourceBase(uiBaseDir)
+    scopeUiResourceHandler.setDirectoriesListed(false)
     scopeUiContext.setHandler(scopeUiResourceHandler)
 
     val scopeBaseYumResourceHandler: ResourceHandler = new ResourceHandler
     scopeBaseYumResourceHandler.setDirectoriesListed(true)
     scopeBaseYumResourceHandler.setResourceBase(yumBaseDir)
-    scopeUiContext.setHandler(scopeBaseYumResourceHandler)
+    scopeBaseYumContext.setHandler(scopeBaseYumResourceHandler)
 
     val productsBaseResourceHandler: ResourceHandler = new ResourceHandler
     productsBaseResourceHandler.setDirectoriesListed(true)
     productsBaseResourceHandler.setResourceBase(productsBaseDir)
-    scopeUiContext.setHandler(productsBaseResourceHandler)
+    productsBaseContext.setHandler(productsBaseResourceHandler)
 
 
     val contextHandlerCollection: ContextHandlerCollection = serverMap.get("scope-ui").getHandler().asInstanceOf[ContextHandlerCollection]
     contextHandlerCollection.addHandler(scopeBasePuppetContext)
     contextHandlerCollection.addHandler(scopeUiContext)
+    contextHandlerCollection.addHandler(scopeBaseYumContext)
+    contextHandlerCollection.addHandler(productsBaseContext)
   }
 
   def stop() {

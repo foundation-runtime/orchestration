@@ -12,7 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+################################
+# CISCO Generic Init Script
+################################
 # source function library
 . /etc/init.d/functions
 
@@ -57,7 +59,7 @@ set_controlParameters(){
     export _ARTIFACT_NAME=$artifactName;\
     export _ARTIFACT_VERSION=$artifactVersion;\
     export _FULL_COMPONENT_NAME=\"$fullComponentName\";\
-    export _INSTALL_DIR=\"$installDir\";\
+    export _INSTALL_DIR=\"$installDir\";"
 }
 
 runProcsCount=0
