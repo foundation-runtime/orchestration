@@ -99,10 +99,8 @@ object ModelUtils extends Slf4jLogger {
           val scopeBase: String =
             """
               |class role::scopeBase {
-              |       require set_env
               |       require admin::ssh_disable_host_key_check
               |       require admin::augeas
-              |       require admin::log
               |       require admin::ntp
               |       require admin::yum
               |}

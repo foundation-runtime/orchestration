@@ -134,6 +134,9 @@ class materializerBase(object):
         '''
         installNodes = dict()
         installNodes['nodes'] = list()
+        sections = dict()
+        sections['sections'] = list()
+
         schema = dict()
 
         schema['schemaVersion'] = '0.1'
@@ -141,7 +144,8 @@ class materializerBase(object):
         schema['setupProvisioningEnv'] = True
         schema['announceHostNames'] = True
         schema['installModules'] = dict()
-        schema['preDeleteNodesScript'] = list()
+
+        schema['preDeleteNodesScript'] = sections
         schema['exposeAccessPoints'] = dict()
 
         return schema
@@ -264,7 +268,7 @@ class materializerBase(object):
         return module
 
 
-    def createVmName(self, suffix, includeInstanceName = True):
+    def createVmName(self, suffix, includeInstanceName=True):
         '''
         if includeInstanceName = True
             Return full vm name: <tenantId>-<instanceName>-<suffix>

@@ -208,9 +208,13 @@ class VMUtils extends Slf4jLogger {
       def apply(nodeMetaData: NodeMetadata): Boolean = {
         val isInGroup = getGroupFromNodeMetadata(nodeMetaData) match {
           case group: String => {
-            group.equalsIgnoreCase(groupName.getOrElse(throw new IllegalArgumentException("Group name could not be empty.")))
+            groupName match {
+              case Some(searchGroup) => group.equalsIgnoreCase(searchGroup)
+              case None => true
+            }
+//            group.equalsIgnoreCase(groupName.getOrElse(throw new IllegalArgumentException("Group name could not be empty.")))
           }
-          case _ => false
+          case _ => true
         }
 
         val hasTags = tagsToSearch match {
@@ -336,11 +340,12 @@ class VMUtils extends Slf4jLogger {
         case null => ""
         case _ => nodeMetaData.getUri.toString
     }
-    
+
+    val privateKey: Option[String] = if (nodeMetaData.getCredentials != null) Option(nodeMetaData.getCredentials.getPrivateKey) else None
     ScopeNodeMetadata(nodeMetaData.getId,
       getNameFromNodeMetadata(nodeMetaData),
       Option(ScopeUtils.configuration.getString("cloud.env.dnsName", null)),
-      Option(nodeMetaData.getCredentials.getPrivateKey),
+      privateKey,
       allAddress.filter(filterPrivateAddress),
       allAddress.filterNot(filterPrivateAddress),
       getGroupFromNodeMetadata(nodeMetaData),
@@ -359,7 +364,11 @@ class VMUtils extends Slf4jLogger {
   def listNodesByTags(tags: Set[String]) = {
     val filter = new Predicate[ComputeMetadata] {
       def apply(computeMetadata: ComputeMetadata): Boolean = {
-         computeMetadata.getTags.containsAll(tags)
+        try {
+          computeMetadata.getTags.containsAll(tags)
+        } catch {
+          case t:Throwable => false
+        }
       }
     }
     computeServiceContext.getComputeService.listNodesDetailsMatching(filter).map((node) => this.JcloudsNodeMetaDataToScopeNodeMetaData(node, node.getStatus.toString))
