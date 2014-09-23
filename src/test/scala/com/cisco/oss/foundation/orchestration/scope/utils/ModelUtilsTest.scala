@@ -27,12 +27,13 @@ import com.cisco.oss.foundation.orchestration.scope.provision.model.ProductRepoI
 object ModelUtilsTest {
   val modelString = """
                       {
-                      |  "preDeleteNodesScript" : [
+                      |  "preDeleteNodesScript" : {
+                      |  "sections" : [
                       |  {
                       |  "nodes": ["test-node"],
                       |  "script": "dhclient -v -r -lf /var/lib/dhclient/dhclient-eth0.leases -B -d -H `hostname` eth0"
                       |  }
-                      |  ],
+                      |  ] },
                       |  "setupProvisioningEnv": true,
                       |  "announceHostNames": true,
                       |  "exposeAccessPoints": {

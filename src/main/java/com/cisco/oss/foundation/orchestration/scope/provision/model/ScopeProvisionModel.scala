@@ -33,6 +33,6 @@ class ProductRepoInfo(productUrl: String) {
   val productPuppetRepoUrl = s"${productUrl}prodpuppet/"
   val productYumRepoUrl = s"${productUrl}yum/"
   val productMaterializerUrl = s"${productUrl}materializer/"
-  val basePuppetRepoUrl = s"${ScopeUtils.configuration.getString("basePuppetRepoUrl")}scope-base/puppet/"
+  val basePuppetRepoUrl = s"${ScopeUtils.configuration.getString("basePuppetRepoUrl")}/scope-base/puppet/"
 }
 

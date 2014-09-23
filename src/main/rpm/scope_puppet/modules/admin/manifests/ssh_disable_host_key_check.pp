@@ -1,6 +1,6 @@
 class admin::ssh_disable_host_key_check() {
 
-  $host_pattern = hiera('host_pattern')
+  $host_pattern = hiera('host_pattern','*.*.*.*')
   $host_pattern_quot = "'$host_pattern'"
 
   augeas { 'ssh_disable_host_key_check':

@@ -89,7 +89,7 @@ class RunScope extends Slf4jLogger {
     serversField.setAccessible(true)
     val serverMap: ConcurrentHashMap[String, Server] =  serversField.get(JettyHttpServerFactory.INSTANCE).asInstanceOf[ConcurrentHashMap[String, Server]]
 
-    val puppetBaseDir = ScopeUtils.configuration.getString("scope-ui.scope-puppet.puppetBaseDir", "/etc/puppet/scope_puppet/")
+    val puppetBaseDir = ScopeUtils.configuration.getString("scope-ui.scope-puppet.puppetBaseDir", "/opt/cisco/scopeData/scope-puppet")
     val yumBaseDir = ScopeUtils.configuration.getString("scope-ui.scope-base.yum.baseDir", "/opt/cisco/scopeData/scope-base/")
     val productsBaseDir = ScopeUtils.configuration.getString("scope-ui.scope-products.yum.baseDir", "/opt/cisco/scopeData/products/")
     val uiBaseDir = ScopeUtils.configuration.getString("scope-ui.baseDir", "/opt/cisco/scope/ui")

@@ -227,7 +227,10 @@ trait BasicResource extends Slf4jLogger {
     val preDeleteNodesScript = instance.preDeleteNodesScript match {
       case Some(scripts) => {
         model.preDeleteNodesScript match {
-          case Some(newScripts) => Some(scripts ::: newScripts)
+          case Some(newScripts) => {
+            val mergedList = newScripts.sections ::: scripts.sections
+            Some(PreDeleteNodes(mergedList))
+          }
           case None => Some(scripts)
         }
       }
@@ -638,18 +641,21 @@ trait BasicResource extends Slf4jLogger {
             case Some(scripts) => {
               logInfo("Running preDelete script.")
               val privateKey = ins.rsaKeyPair.getOrElse("private", throw new Exception(s"${ScopeErrorMessages.NO_RSA} for INSTANCE ( ${ins.instanceName} )."))
-              scripts.foreach {
+              scripts.sections.foreach {
                 case s => {
                   val builder = new ScriptBuilder()
                   builder.addStatement(exec(s.script))
 
-                  s.nodes.par.foreach {
+                  s.nodes.foreach {
                     case name => {
-                      machineIds.get(name) match {
-                        case Some(n) => vmUtils.runScriptOnNode(builder.render(OsFamily.UNIX), "preDelete", n, privateKey)
-                        case None =>  vmUtils.runScriptOnMatchingNodes(builder.render(OsFamily.UNIX), "preDelete", None, Some(name), privateKey = privateKey)
+                      try {
+                        machineIds.get(name) match {
+                          case Some(n) => vmUtils.runScriptOnNode(builder.render(OsFamily.UNIX), "preDelete", n, privateKey)
+                          case None => vmUtils.runScriptOnMatchingNodes(builder.render(OsFamily.UNIX), "preDelete", None, Some(name), privateKey = privateKey)
+                        }
+                      } catch {
+                        case t:Throwable => logWarn(s"Got Exception while running pre delete script: ${t.toString}")
                       }
-
                     }
                   }
                 }
@@ -661,7 +667,7 @@ trait BasicResource extends Slf4jLogger {
         case None => logWarn("instance does NOT supply can't run preDeleteScripts!")
       }
     } catch {
-      case _: Throwable =>
+      case t: Throwable => logWarn(t.toString)
     }
 
 
@@ -675,7 +681,7 @@ trait BasicResource extends Slf4jLogger {
       case _ => {
         instance match {
           case Some(ins) => {
-            val tags = Set(ins.instanceId, ins.product.productName, ins.systemId)
+            val tags = Set(ins.instanceName, ins.product.productName, ins.systemId)
             val nodesByTags = vmUtils.listNodesByTags(tags)
             nodesByTags.foreach((hostDetails) => {
               logInfo("Deleting vm: {} id: {}", hostDetails.hostname, hostDetails.id)
