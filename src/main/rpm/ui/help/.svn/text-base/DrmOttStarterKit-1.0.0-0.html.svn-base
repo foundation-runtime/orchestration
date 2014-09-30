@@ -1,0 +1,135 @@
+<html>
+	
+	<head>
+		<title>Help Page</title>
+		<style type="text/css">
+			h1 {
+				margin: 0;
+				padding: 0;
+				line-height:auto;
+				color: #3366FF;
+				font-size: 28pt;
+			}
+			
+			h2 {
+				margin: 0;
+				padding: 0;
+				line-height:auto;
+				color: #3366FF;
+				font-size: 20pt;
+				font-style:italic;
+			}
+
+			p {
+				margin-left:8px; 
+				margin-top:0px; 
+				padding-top:0px;
+				line-height: 1.5;
+			}.headerText {
+				margin-top:2px;
+			}.paramRef {
+				line-height: 1;
+				margin-left:14px;
+				margin-top:0px;
+			}
+		</style>
+		
+	</head>
+
+	<body style="font-size:12.5pt">
+		
+		<div style="padding-top:7px">
+			<h1>DRM HE OTT Starter Kit (1.0.0-0)</h1>
+			<P class="headerText">The following sections describes the configuration parameters that are relevant for the DRM HE deployment.</P>
+			<P class="paramRef"><a href="#ParamDeploymentMode">Deployment Mode</a></P>
+			<P class="paramRef"><a href="#ParamIncludeTGSDeployment">Deploy Token Generator Server</a></P>
+			<P class="paramRef"><a href="#ParamEnableConcurrency">Enable Concurrency</a></P>
+			<P class="paramRef"><a href="#ParamChannelListFormat">Channel List Format</a></P>
+			<P class="paramRef"><a href="#ParamChannelsValue">Channels Value</a></P>
+			<P class="paramRef"><a href="#ParamSgwElGamalKeysFile">Secure Gateway El-Gamal Keys File (prv.8.der)</a></P>
+			<P class="paramRef"><a href="#ParamkeyStoreCustomerBaseSeed">Key-Store Customer Seed</a></P>
+			<P class="paramRef"><a href="#ParamSdllGeneratorIPAddress">SDLL Generator Server Address(es)</a></P>
+			<P class="paramRef"><a href="#ParamConcurrentTicketsLimitation">Concurrent Tickets Limitation</a></P>
+		</div>    
+		
+		<div style="padding-top:10px">
+			<h2 id="ParamDeploymentMode">Deployment Mode</h2>
+			<P class="headerText">
+				Defines the deployment model of the DRM Head-End components:
+				<ul><li>
+					<b>Standalone</b> - each component is provisioned with a single instance, without redundant backup. This model is simplier but it folds up a risk of unrecovered failure of one or more components.
+				</li></ul>
+				<ul><li>
+					<b>Active-Active</b> - each component is provisioned with 2 instances on different machines. This mode increases the system reliability and allows load balancing the traffic on a single component.
+				</li></ul>
+			</P>
+		</div>
+		
+		<div style="padding-top:7px">
+			<h2 id="ParamIncludeTGSDeployment">Deploy Token Generator Server</h2>
+			<P class="headerText">
+				Defines whether to include the Token Generator Server component in the DRM Head-End deployment (<b>True</b>). Component should not be deployed (<b>False</b>) only if there is already Token Generator Server instance installed.
+			</P> 
+		</div>
+
+		<div style="padding-top:7px">
+			<h2 id="ParamEnableConcurrency">Enable Concurrency</h2>
+			<P class="headerText">
+				Defines whether to provide the system with the concurrency control features. If concurrency is enabled (<b>True</b>), the relevant components (LWST & CDL) will be included in the DRM Head-End deployment.
+			</P> 
+		</div>
+
+		<div style="padding-top:7px">
+			<h2 id="ParamChannelListFormat">Channel List Format</h2>
+			<P class="headerText">
+				Determines the format by which channel list are provided in <a href="#ParamChannelsValue">Channels Value</a> parameter. 
+				The following formats are supported:
+				<ul><li>
+					<b>By Name (Channel1,Channel2...)</b> - only channel name is provided. Names should be separated by comma (for example: Channel1,Channel2 and etc.).
+				</li></ul>
+				<ul><li>
+					<b>By ID (1,2...)</b> - only channel ID is provided. IDs should be separated by comma (for example: 1,2 and etc.).
+				</li></ul>
+				<ul><li>
+					<b>By Name and ID (Channel1,1,Channel2,2...)</b> - both channel Name & channel ID are provided. All values should be separated by comma (Channel1,1,Channel2,2 and etc.).
+				</li></ul>
+			</P> 
+		</div>
+
+		<div style="padding-top:7px">
+			<h2 id="ParamChannelsValue">Channels Value</h2>
+			<P class="headerText">
+				Lists all supported live channels throughout the system. The format of the entered values is determined according to the selected <a href="#ParamChannelListFormat">Channel List Format</a> option. Note: this is a required parameter and its value must be given.
+			</P> 
+		</div>
+		
+		<div style="padding-top:7px">
+			<h2 id="ParamSgwElGamalKeysFile">Secure Gateway El-Gamal Keys File (prv.8.der)</h2>
+			<P class="headerText">
+				Loads the specific El-Gamal Keys file (named 'prv.8.der') that is required for the Secure Gateway operation. This file is provisioned uniquely for each customer by the provider of this product. If keys file is not entered, a test El-Gamal Keys file will be used instead. However, the test Keys file is not unique and so is not designated to be deployed on live systems.
+			</P> 
+		</div>
+
+		<div style="padding-top:7px">
+			<h2 id="ParamkeyStoreCustomerBaseSeed">Key-Store Customer Seed</h2>
+			<P class="headerText">
+				Specifies the secret seed value that is used gor generating content keys at the key store. The seed value is provisioned uniquely for each customer by the provider of this product. If value is not entered, an automated unique seed value is generated instead. In this case, it is crucial to preserve the self genearted value so it can be restored if and when needed. 
+			</P> 
+		</div>
+
+		<div style="padding-top:7px">
+			<h2 id="ParamSdllGeneratorIPAddress">SDLL Generator Server Address(es)</h2>
+			<P class="headerText">
+				Specifies the IP Address value of the remote SDLL Generator server. If multiple SDLL Generator servers are deployed, set the IP address values of all, separated by comma. 
+			</P> 
+		</div>
+
+		<div style="padding-top:7px">
+			<h2 id="ParamConcurrentTicketsLimitation">Concurrent Tickets Limitation</h2>
+			<P class="headerText">
+				Specifies the limit of the concurrent tickets that are allowed throught the system per domain. In case that this limit is reached, devices on the same domain will not be able to acquire new license before releasing a used ticket. This parameter is relevant only if Concurrency is enabled by setting <a href="#ParamEnableConcurrency">Enable Concurrency</a> to <b>True</b>.
+			</P> 
+		</div>
+		
+	</body>
+</html>

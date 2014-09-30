@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scope</title>
+    <link href="styles/scope.css" rel="stylesheet" />
+    <script type="text/javascript" src="scripts/jquery-1.8.2.min.js"></script>
+    <script type="text/javascript" src="scripts/default.js"></script>
+    <script type="text/javascript" src="scripts/instance.js"></script>
+	<script>
+		
+		$(document).ready(function() {
+        	$(".systemName").html(systemCookie);
+        	showInstanceDetails();
+		});
+	</script>
+      <link rel="icon" type="image/png" 
+      href="images/ScopeLogo.png">
+</head>
+<body>
+	<div id="topLinks">
+	    <div id="pageLogo"></div>
+	    <div id="ciscologo"></div>
+	    <div id="logout">Logout</div>
+    </div>
+
+    <div id="pagecontainer">
+        <div id="topNavBar" class="txt16">
+            <div class="topNav"><a href="catalog.html">Catalog</a></div>
+            <div class="topNav selected"><a href="instances.html">Instances</a></div>
+            <div class="topNav"><a href="about.html">About</a></div>
+		    <div class="systemName" >&nbsp;</div>
+        </div>
+        <div id="pageData">
+			<div class="spacerTop">
+				<div class="instancetitle"></div>
+				<div class="instancedata"></div>
+			</div>
+        </div>
+    </div>
+</body>
+</html>

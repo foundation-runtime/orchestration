@@ -239,6 +239,26 @@ class VMUtils extends Slf4jLogger {
         .privateKey(privateKey).build()).nameTask(scriptName))
   }
 
+  def runScriptOnMatchingNodes(runScript: String, scriptName: String, hostnameList: List[String], privateKey: String) = {
+    val filter = new Predicate[NodeMetadata] {
+      def apply(nodeMetaData: NodeMetadata): Boolean = {
+        val isNameContains = getNameFromNodeMetadata(nodeMetaData) match {
+          case name: String => {
+            hostnameList.contains(name)
+          }
+          case _ => false
+        }
+
+        isNameContains
+      }
+    }
+    computeServiceContext.getComputeService.runScriptOnNodesMatching(filter,
+      runScript,
+      overrideLoginCredentials(LoginCredentials.builder()
+        .user("root")
+        .privateKey(privateKey).build()).nameTask(scriptName))
+  }
+
   def runScriptOnNode(runScript: String, scriptName: String, nodeMetaData: ScopeNodeMetadata, privateKey: String) = {
     computeServiceContext.getComputeService.runScriptOnNode(nodeMetaData.id,
       runScript,

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scope</title>
+    <link href="styles/scope.css" rel="stylesheet" />
+    <script type="text/javascript" src="scripts/jquery-1.8.2.min.js"></script>
+    <script type="text/javascript" src="scripts/default.js"></script>
+	<script>
+		
+		$(document).ready(function() {
+			$("#userName").html(systemCookie);
+        	$(".systemName").html(systemCookie);
+		});
+	</script>
+</head>
+<body>
+	<div id="topLinks">
+	    <div id="pageLogo"></div>
+	    <div id="ciscologo"></div>
+	    <div id="logout">Logout</div>
+    </div>
+
+    <div id="pagecontainer">
+        <div id="topNavBar" class="txt16">
+            <div class="topNav"><a href="catalog.html">Catalog</a></div>
+            <div class="topNav"><a href="instances.html">Instances</a></div>
+            <div class="topNav selected"><a href="about.html">About</a></div>
+		    <div class="systemName" >&nbsp;</div>
+        </div>
+        <div id="pageData">
+			<div class="spacerTop">
+				<div class="abouttext">
+					<div class="aboutline">Username:&nbsp;<span id="userName"></span></div>
+				</div>
+				<div class="abouttext">
+					<div class="aboutline">Password:&nbsp;<span id="password">****</span></div>
+				</div>
+				<div class="abouttext">
+					<div class="aboutline">Email:&nbsp;Not Configured</div>
+				</div>
+				<div class="abouttext">
+					<div class="aboutmoreinfo">
+						In case of any queries please send an email to <a class="link" href="mailto:scopesupport@cisco.com">scopesupport@cisco.com</a>
+					</div>
+				</div>
+			</div>
+        </div>
+
+    </div>
+</body>
+</html>

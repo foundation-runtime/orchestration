@@ -1,0 +1,285 @@
+body{
+    margin: 0px;
+    font-family: sans-serif;
+    font-size: 13px;
+
+    background: url("../images/app_bg.png") no-repeat top center fixed;
+    -webkit-background-size: cover; /*for webKit*/
+    -moz-background-size: cover; /*Mozilla*/
+    -o-background-size: cover; /*opera*/
+    background-size: cover; /*generic*/
+}
+a{
+    text-decoration: none;
+    color: #333333;
+}
+.font13{
+    font-size: 13px;
+    color: #444444;
+    font-weight: 300;
+}
+.txt16{
+    font-size: 16px;
+}
+.txt20{
+    font-size: 20px;
+}
+.txt30{
+    font-size: 30px;
+}
+
+.padBT5{
+    padding-bottom: 5px;
+    padding-top: 5px;
+}
+.pad5{
+    padding: 5px;
+}
+.spacerTop{
+    margin-top: 15px;
+}
+.font300{
+    font-weight: 300;
+}
+.dInput{
+    width: 250px;
+    height: 25px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 15px;
+    font-weight: 300;
+}
+
+.bInput{
+    padding: 2px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    font-weight: 300;
+}
+
+.boderBtm{
+    border-bottom: 1px solid #000000;
+}
+#loginHeader{
+    background-position: right;
+    background-image: url("../images/login.png");
+    background-repeat: no-repeat;
+    height: 65px;
+    line-height: 65px;
+}
+#pageLogo{
+    height: 73px;
+    width: 148px;
+    background-image: url("../images/logo.png");
+    background-repeat: no-repeat;
+	margin-left: 20px;
+}
+
+#loginContainer{
+    position: absolute;
+    height: 260px;
+    width: 250px;
+    margin: -160px 0 0 -200px;
+    top: 50%;
+    left: 50%;
+    background-color: #FFF;
+    border-radius: 20px;
+    padding: 40px;
+    -webkit-box-shadow: -1px -1px 6px rgba(50, 50, 50, 0.75);
+    -moz-box-shadow:    -1px -1px 6px rgba(50, 50, 50, 0.75);
+    box-shadow:         -1px -1px 6px rgba(50, 50, 50, 0.75);
+}
+
+#topLinks{
+    color: #000000;
+    float: right;
+    margin-top: -65px;
+    margin-right: 10px;
+}
+
+.error{
+    background-color: #EF8B8B;
+    border: 1px solid #FF0000 !important;
+}
+
+#msgBar{
+    border: 1px solid #CCCCCC;
+    width: 55%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: -45px;
+    padding: 7px;
+    border-radius: 7px;
+    z-index: 101;
+    display: none;
+}
+
+#pageContainer{
+    position: absolute;
+    width: 94%;
+    min-height: 600px;
+    margin: 0px 0 0 -47%;
+    top: 130px;
+    left: 50%;
+    border-radius: 10px;
+}
+
+.tableHeader{
+    background-color: #10B5C8;
+    border: 1px solid #1287c8;
+    border-radius: 5px;
+}
+.myAppsT > td{
+    text-align: center;
+    border-right: 1px solid #e9e9e9;
+}
+
+.myAppsT > td:last-child
+{
+    border-right: 0px;
+}
+
+#topNavBar{
+    margin-top: -55px;
+}
+
+.topNav{
+    padding: 4px;
+    float: left;
+    width: 180px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    border: 1px solid #d5cead;
+    margin: 5px;
+    border-radius: 5px;
+    background-color: #EFE8C5;
+
+}
+
+.topNav:first-child{
+    margin-left: 0px;
+}
+
+.topNav:hover{
+    cursor: pointer;
+}
+.topNav.selected{
+    border: 1px solid #8b8572;
+    background-color: #FFFFFF;
+}
+
+
+.topNav.selected > a{
+    color: #000;
+}
+
+#selectTabH{
+    height: 2px;
+    margin-top: 48px;
+    background-color: #FFF;
+    border-top: 3px solid #000000;
+}
+
+#pageData{
+    margin-top: 55px;
+    min-height: inherit;
+    background-color: #FFF;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.down-arrow {
+    border-color: black transparent;
+    border-style: solid;
+    border-width: 5px 5px 0px 5px;
+    margin-top: 5px;
+    margin-left: 85px;
+    height: 0px;
+    width: 0px;
+    border-top: 5px solid #8b8572;
+}
+
+.down-more {
+    border-color: black transparent;
+    border-style: solid;
+    border-width: 5px 5px 0px 5px;
+    height: 0px;
+    width: 0px;
+    border-top: 5px solid #8b8572;
+    margin-top: -28px;
+
+}
+
+#listView{
+    margin-top: 20px;
+}
+
+.listRow{
+    clear: both;
+    line-height: 50px;
+    border-bottom: 1px solid #EFE8C5;
+}
+
+.listRow span{
+    cursor: pointer;
+}
+
+.loadInfo td{
+    padding: 10px;
+}
+
+.btn{
+    background-color: #EFE8C5;
+    padding: 7px 25px;
+    border-radius: 7px;
+    margin-left: 20px;
+    border: 1px solid #d5cead;
+    font-size: 12px;
+}
+
+#subscriptionTErr{
+    padding-left: 10px;
+    color: #FF0000;
+}
+
+#topLinks span{
+    cursor: pointer;
+}
+
+.statusError{
+	background-color: #FF0000;
+	width: 15px;
+	height: 45px;
+	float: left;
+	margin-right: 10px;
+	margin-top: 4px;
+}
+.statusProgress{
+	background: url("../images/progress.gif");
+	width: 15px;
+	height: 45px;
+	float: left;
+	margin-right: 10px;
+	margin-top: 4px;
+}
+.statusSucess{
+	background-color: #7abd39;
+	width: 15px;
+	height: 45px;
+	float: left;
+	margin-right: 10px;
+	margin-top: 4px;
+}
+
+.link{
+	text-decoration:underline;
+	font-weight:bold;
+	color: #000000;
+}
+.indicator{
+	padding:3px 10px;
+	float: left;
+	margin:-4px 5px;
+	text-align:center;
+	border-radius: 3px;
+}

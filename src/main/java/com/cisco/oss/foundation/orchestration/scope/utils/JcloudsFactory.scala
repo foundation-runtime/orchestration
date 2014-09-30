@@ -16,6 +16,7 @@
 
 package com.cisco.oss.foundation.orchestration.scope.utils
 
+import java.util
 import java.util.Properties
 import com.cisco.oss.foundation.orchestration.scope.ScopeConstants
 import com.google.common.collect.ImmutableSet
@@ -40,7 +41,7 @@ import scala.collection.JavaConversions._
  */
 object JcloudsFactory extends Slf4jLogger {
   private val modules = ImmutableSet.of(new ExecutorServiceModule(sameThreadExecutor(), sameThreadExecutor()), new SshjSshClientModule(), new SLF4JLoggingModule());
-
+  private val overrides = new Properties()
   private val cloudProvider = ScopeUtils.configuration.getString("cloud.provider")
   private val serverProviderName = ScopeUtils.configuration.getString(s"cloud.provider.$cloudProvider.server")
 
@@ -50,7 +51,20 @@ object JcloudsFactory extends Slf4jLogger {
   private val contextBuilder = ContextBuilder.newBuilder(serverProviderName)
     .credentials(username, password)
     .modules(modules)
-  //  .buildView(classOf[ComputeServiceContext])
+
+  readJcloudsConfiguration
+
+  def readJcloudsConfiguration(): Unit = {
+    val keys: util.Iterator[String] = ScopeUtils.configuration.getKeys("jclouds")
+
+    keys.foreach{
+      case key => {
+        val value = ScopeUtils.configuration.getString(key)
+        overrides.setProperty(key, value)
+      }
+    }
+//    contextBuilder.overrides(overrides)
+  }
 
    def computeServiceContext() = {
      cloudProvider match {
@@ -77,11 +91,9 @@ object JcloudsFactory extends Slf4jLogger {
            case Some(pwd) => pwd
            case None => "master"
          }
-         val overrides = new Properties()
          logTrace(s"VM init password $initPass")
          overrides.put("jclouds.vsphere.vm.password", initPass)
 
-         contextBuilder.overrides(overrides)
 
        }
        case "aws" => {
@@ -96,7 +108,7 @@ object JcloudsFactory extends Slf4jLogger {
        }
        case _ =>
      }
-
+     contextBuilder.overrides(overrides)
      contextBuilder.buildView(classOf[ComputeServiceContext])
    }
 

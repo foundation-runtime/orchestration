@@ -635,29 +635,41 @@ trait BasicResource extends Slf4jLogger {
 
   def deleteInstanceVMs(machineIds: Map[String, ScopeNodeMetadata], instance: Option[Instance] = None) = {
     try {
+      val scriptsMap: Map[ScriptBuilder, List[String]] = Map()
       instance match {
         case Some(ins) => {
           ins.preDeleteNodesScript match {
             case Some(scripts) => {
-              logInfo("Running preDelete script.")
-              val privateKey = ins.rsaKeyPair.getOrElse("private", throw new Exception(s"${ScopeErrorMessages.NO_RSA} for INSTANCE ( ${ins.instanceName} )."))
-              scripts.sections.foreach {
-                case s => {
-                  val builder = new ScriptBuilder()
-                  builder.addStatement(exec(s.script))
+              if (scripts.sections.size > 0) {
+                logInfo("Running preDelete script.")
+                val privateKey = ins.rsaKeyPair.getOrElse("private", throw new Exception(s"${ScopeErrorMessages.NO_RSA} for INSTANCE ( ${ins.instanceName} )."))
+                scripts.sections.foreach {
+                  case s => {
+                    val builder = new ScriptBuilder()
+                    builder.addStatement(exec(s.script))
 
-                  s.nodes.foreach {
-                    case name => {
-                      try {
-                        machineIds.get(name) match {
-                          case Some(n) => vmUtils.runScriptOnNode(builder.render(OsFamily.UNIX), "preDelete", n, privateKey)
-                          case None => vmUtils.runScriptOnMatchingNodes(builder.render(OsFamily.UNIX), "preDelete", None, Some(name), privateKey = privateKey)
+                    s.nodes.foreach {
+                      case name => {
+                        try {
+                          machineIds.get(name) match {
+                            case Some(n) => vmUtils.runScriptOnNode(builder.render(OsFamily.UNIX), "preDelete", n, privateKey)
+                            case None =>{
+                              val hosts: List[String] = scriptsMap.getOrElse(builder, List())
+                              scriptsMap.put(builder, name :: hosts)
+                            }
+                          }
+                        } catch {
+                          case t: Throwable => logWarn(s"Got Exception while running pre delete script: ${t.toString}")
                         }
-                      } catch {
-                        case t:Throwable => logWarn(s"Got Exception while running pre delete script: ${t.toString}")
                       }
                     }
                   }
+                }
+              }
+              scriptsMap.foreach{
+                case (builder, hosts) => {
+                  val privateKey = ins.rsaKeyPair.getOrElse("private", throw new Exception(s"${ScopeErrorMessages.NO_RSA} for INSTANCE ( ${ins.instanceName} )."))
+                  vmUtils.runScriptOnMatchingNodes(builder.render(OsFamily.UNIX), "preDelete", hosts, privateKey = privateKey)
                 }
               }
             }
@@ -666,9 +678,11 @@ trait BasicResource extends Slf4jLogger {
         }
         case None => logWarn("instance does NOT supply can't run preDeleteScripts!")
       }
+
     } catch {
       case t: Throwable => logWarn(t.toString)
     }
+
 
 
     machineIds.values match {

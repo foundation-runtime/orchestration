@@ -1,0 +1,335 @@
+body{
+    margin: 0px;
+    font-family: arial;
+    font-size: 12px;
+    color: #586168;
+}
+a{
+    text-decoration: none;
+    color: #60b6c9;
+}
+#toplinks {
+    position: absolute;
+    width: 94%;
+    min-height: 600px;
+    margin: 0px 0 0 -47%;
+    top: 30px;
+    left: 50%;
+}
+
+#pageLogo{
+	margin-top:15px;
+    height: 114px;
+    width: 368px;
+    background-image: url("../images/ScopeLogo.png");
+    background-repeat: no-repeat;
+	margin-left: 20px;
+    float: left;
+}
+#ciscologo{
+	margin-top:50px;
+    float: right;
+    background-image: url("../images/CiscoLogo.png");
+    margin-right: 100px;
+    width: 57px;
+    height: 30px;
+    background-repeat: no-repeat;
+}
+#logout{
+	margin-top:86px;
+    float: right;
+    margin-right: -92px;
+    width: 83px;
+    height: 12px;
+    color: #71cadf;
+    font-size : 12px;
+    cursor: pointer;
+}
+
+#pagecontainer{
+    position: absolute;
+    width: 94%;
+    margin: 0px 0 0 -48%;
+    top: 150px;
+    left: 50%;
+    border-width:2px;
+    border:2px solid #eaeded
+}
+#topNavBar{
+    width: 100%;
+    float: left;
+    position: absolute;
+    top: 30px;
+    margin-top: -55px;
+    margin-left: 15px;
+}
+
+.topNav{
+    padding: 4px;
+    float: left;
+    width: 100px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    border: 0;
+    margin-top: 5px;
+	font-weight:bold;
+	font-size:17px;
+	padding-left: 5px;
+	padding-right: 5px;
+	background-color:#FFFFFF;
+}
+
+.systemName {
+	float:right;
+	color: #71cadf;
+    padding: 4px;
+    width: 100px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    border: 0;
+    margin-top: 5px;
+	font-weight:bold;
+	font-size:17px;
+	padding-left: 5px;
+	padding-right: 5px;
+	background-color:#FFFFFF;
+    margin-right: 30px;
+}
+.topNav >a{
+    color: #8d97a0;
+}
+.topNav:first-child{
+    margin-left: 0px;
+}
+
+.topNav:hover{
+    cursor: pointer;
+}
+.topNav.selected{
+    color: #71cadf;
+}
+.topNav.selected > a{
+    color: #7acadf;
+}
+#pageData{
+    min-height: inherit;
+    background-color: #FFF;
+    padding: 20px;
+}
+.productwrapper{
+    line-height: 45px;
+    background-color: #e4f3fa;
+    margin-left: 0px;    
+    width:100%;
+}
+
+.productwrapperopen{
+    line-height: 45px;
+    background-color: #cfedfa;
+    margin-left: 0px;    
+    width:100%;
+    float:left;
+}
+
+.productsep{
+    line-height: 3px;
+    border-top: 1px solid #c2c6c6;
+    background-color: #ffffff;
+    clear:both
+}
+.productlogo{
+    background-image: url("../images/CatalogIcon.png");
+    margin-left: 10px;
+    margin-top: 12px;
+    width: 31px;
+    height:22px;
+    float: left;
+}
+.instancelogo{
+    background-image: url("../images/ScopeIcon.png");
+    margin-left: 10px;
+    margin-top: 12px;
+    width: 27px;
+    height:18px;
+    float: left;
+}
+
+.producttextopen{
+    margin-left: 50px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #586168;
+}
+
+.producttext{
+    margin-left: 50px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #849199;
+    cursor: pointer;
+}
+
+.productoptions {
+    line-height: 35px;
+}
+
+input[type=button] {
+    font-weight: normal;
+    color: #ffffff;
+    min-width: 90px;
+    margin: 5px 10px 10px 0px;
+    background-color: #596168;
+    border: 1px solid #cdcdcd;
+    cursor: pointer;
+	font-size: 14px;
+}
+
+input[type=text] {
+	border: 1px solid #596168;
+}
+
+.buttonswrapper {
+	float:right;
+	font-weight: normal;
+}
+
+.instanceBtn {
+	padding: 6px;
+}
+.cancelBtn {
+	padding: 6px;
+}
+
+.subscriptionname {
+	padding: 4px;
+	margin:0;
+	width:200px;
+}
+
+.instdetailstable {
+	width:100%;
+    padding:0;
+    margin:0;
+}
+
+.instdetailstable tr {
+    line-height: 30px;
+    padding:0;
+    margin:0;
+}
+.logintitle {
+	font-size: 17px;
+	color: #808992;
+	font-weight:bold;
+}
+.spacerTop{
+    margin-top: 25px;
+}
+
+#loginbutton {
+    font-weight: normal;
+    color: #0;
+    min-width: 90px;
+    margin: 5px 10px 10px 0px;
+    background-color: #83d7ee;
+    border: 0;
+    cursor: pointer;
+	font-size: 14px;
+	width: 252px;
+}
+.logininput {
+	font-size: 17px;
+	font-color: #c1cacb;
+	width: 238px;
+	height:21px;
+	margin-top:11px;
+	padding-left:10px;
+	passing-top:2px;
+}
+
+.instancedata {
+	float:left;
+	margin-left:10px;
+	font-weight: normal;
+}
+
+.instanceprop {
+	float:left;
+}
+.instancerow {
+	clear:both;
+	line-height: 35px;
+}
+
+.statuswrapper {
+	float:right;
+	line-height: 17px;
+	padding-top:18px;
+}
+.statusRunning{
+	float:right;
+	margin-right:10px;
+	color: #25a2be;
+}
+.statusRunningImg{
+	float:right;
+	margin-right:10px;
+    background-image: url("../images/running.png");
+    background-repeat: no-repeat;
+	width: 19px;	
+	height: 19px;
+}
+
+.statusFailed{
+	float:right;
+	margin-right:10px;
+	color: #f74167
+}
+
+.statusFailedImg{
+	float:right;
+	margin-right:10px;
+    background-image: url("../images/error.jpg");
+    background-repeat: no-repeat;
+	width: 19px;	
+	height: 19px;
+}
+.statusStarting {
+	float:right;
+	margin-right:10px;
+	color: #efbd0e
+}
+.statusStartingImg{
+	float:right;
+	margin-right:10px;
+    background-image: url("../images/starting.png");
+    background-repeat: no-repeat;
+	width: 19px;	
+	height: 19px;
+}
+
+.abouttext {
+	font-size: 17px;
+	color: #808992;
+	font-weight:bold;
+	clear:both;
+    line-height: 30px;
+}
+.aboutline {
+	float:left;
+}
+.aboutmoreinfo {
+	font-size: 12px;
+}
+.detailsdata {
+	font-size: 12px;
+}
+.instancetitle {
+	font-size: 17px;
+	color: #71cadf;
+	font-weight:bold;
+	clear:both;
+    line-height: 30px;
+}

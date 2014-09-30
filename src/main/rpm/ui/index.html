@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scope</title>
+    <link href="styles/scope.css" rel="stylesheet" />
+    <script type="text/javascript" src="scripts/jquery-1.8.2.min.js"></script>
+    <script type="text/javascript" src="scripts/jquery.cookie.js"></script>
+    <script type="text/javascript" src="scripts/default.js"></script>
+    <script type="text/javascript">
+
+        $(document).ready(function() {
+			localStorage.systemCookie = "";
+            //$.cookie("Password", "secret", { expires : 1});
+			$("#pWord").keyup(function(event){
+				if(event.keyCode == 13){
+					$("#loginbutton").click();
+				}
+			});
+			
+			$("#loginbutton").click(function(){
+				var uName = $("#uName").val().trim();
+				var pWord = $("#pWord").val().trim();
+				localStorage.systemCookie = uName;
+				if(uName == "" || pWord == ""){
+					alert("User credentials cannot be empty...");
+					return false;
+				}
+				$.ajax({
+					type: "POST",
+					//headers: {"Cookie": "Password=secret"},
+					url: baseUrl + "systems/" + uName ,
+					dataType: "json",
+					data: {"systemId": uName,"systemPassword": pWord},
+					cache: false
+				}).done(function(data) {
+					console.log(data);
+					window.location.href = 'catalog.html';
+				}).fail(function (data){
+					console.error("Error retrieving login information");
+					window.location.href = 'instances.html';
+				});
+			});
+            
+        });
+    </script>
+</head>
+<body>
+	<div id="topLinks">
+	<div id="pageLogo"></div>
+	<div id="ciscologo"></div>
+	</div>
+	
+	<div id="pagecontainer">
+		<div id="topNavBar" class="txt16">
+		    <div class="topNav selected"><a href="#">System</a></div>
+		</div>
+	    <div id="pageData">
+	        <div class="spacerTop">
+		        <div class="logintitle">System Name</div>
+		        <div><input class="logininput" autofocus="autofocus" id="uName" type="text" placeholder="Enter System Name Here" /></div>
+	        </div>
+	        <div class="spacerTop">
+		        <div class="logintitle">Password</div>
+		        <div><input class="logininput" id="pWord" type="password" placeholder="*****" /></div>
+		     </div>
+	        <div class="spacerTop">
+		            <input id="loginbutton" type="button" value="Login" onclick="" style="padding: 8px">
+	        </div>
+	    </div>
+	</div>
+	</div>
+
+</body>
+</html>

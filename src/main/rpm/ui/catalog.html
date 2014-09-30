@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scope</title>
+    <link href="styles/scope.css" rel="stylesheet" />
+    <script type="text/javascript" src="scripts/jquery-1.8.2.min.js"></script>
+    <script type="text/javascript" src="scripts/default.js"></script>
+    <script type="text/javascript" src="scripts/catalog.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+        	$(".systemName").html(systemCookie);
+        	getProducts();
+        });
+    </script>
+    <script type="text/javascript" src="swfobject/swfobject.js"></script>
+</head>
+<body>
+	<div id="topLinks">
+		<div id="pageLogo"></div>
+		<div id="ciscologo"></div>
+		<div id="logout">Logout</div>
+	</div>
+	
+	<div id="pagecontainer">
+		<div id="topNavBar" class="txt16">
+		    <div class="topNav selected"><a href="catalog.html">Catalog</a></div>
+		    <div class="topNav"><a href="instances.html">Instances</a></div>
+		    <div class="topNav"><a href="about.html">About</a></div>
+		    <div class="systemName" >&nbsp;</div>
+		</div>
+		<div id="pageData">
+                <div class="listView">
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
