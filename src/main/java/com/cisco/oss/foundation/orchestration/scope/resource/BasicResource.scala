@@ -688,7 +688,7 @@ trait BasicResource extends Slf4jLogger {
     machineIds.values match {
       case vals: Iterable[ScopeNodeMetadata] if vals.size > 0 => {
         vals.foreach((hostDetails) => {
-          logInfo("Deleting vm: {} id: {} ip: {}", hostDetails.hostname, hostDetails.id, hostDetails.privateAddresses.head)
+          logInfo("Deleting vm: {} id: {}", hostDetails.hostname, hostDetails.id)
           vmUtils.deleteVM(hostDetails)
         })
       }
