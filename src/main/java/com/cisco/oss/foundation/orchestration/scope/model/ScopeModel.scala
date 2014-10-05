@@ -69,7 +69,24 @@ case class System(@Key("_id") @(Id@field) systemId: String, password: String, fo
 
 case class InstallNodes(nodes: List[Node])
 
-case class Node(id: String, name: String, arch: String, osType: String, osVersion: String, region: String, minDisk: Int, minRam: Int, minCores: Int, network: Collection[Network], swapFile: Boolean, image : Option[String], bakedImage: Option[Boolean]/*, nodeType: Option[String]*/, flpImage: Option[String], iso: Option[String], postConfiguration: Boolean = true, folder: Option[String])
+case class Node(id: String,
+                name: String,
+                arch: String,
+                osType: String,
+                osVersion: String,
+                region: String,
+                minDisk: Int,
+                minRam: Int,
+                minCores: Int,
+                network: Collection[Network],
+                swapFile: Boolean,
+                image : Option[String],
+                bakedImage: Option[Boolean],
+                flpImage: Option[String],
+                iso: Option[String],
+                postConfiguration: Boolean = true,
+                folder: Option[String],
+                existingInstance: Option[ExistingInstanceDetails]= None)
 
 case class Network(nicType: String, networkId: Option[String], nicAlias: String, dnsServices: Option[List[String]], openPorts: Option[List[String]])
 
@@ -131,11 +148,18 @@ object ConfigurationEnum extends Enumeration {
   val None, Ccp, File = Value
 }
 
-case class ScopeNodeMetadata(val id: String, val hostname: String, fqdn: Option[String], val privateKey: Option[String],
-                             val privateAddresses: Set[String], val publicAddresses: Set[String], group: String,
-                             val tags: Set[String], val url: String, provisionStatus: String)
+case class ScopeNodeMetadata(val id: String, val hostname: String, fqdn: Option[String],
+                             val privateKey: Option[String],
+                             val privateAddresses: Set[String], val publicAddresses: Set[String],
+                             group: String, val tags: Set[String],
+                             val url: String,
+                             provisionStatus: String,
+                             sshUser: String = "root",
+                             existMachine: Boolean = false)
 
 case class PreDeleteSection(val nodes: List[String],
                          val script: String)
 
 case class PreDeleteNodes(val sections: List[PreDeleteSection])
+
+case class ExistingInstanceDetails(ip: String, user:String, password: String)

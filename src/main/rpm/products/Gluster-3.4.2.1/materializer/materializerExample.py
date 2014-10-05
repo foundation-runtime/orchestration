@@ -22,7 +22,7 @@ class materializer(materializerBase):
         capture = self.createCaptureTemplate()
 
         capture['preDeleteNodesScript']['sections'].append(self.createPreDeleteNodesScript(self.createNodelist(nodeNamePrefix, nodeCount, False),
-                                               'dhclient -v -r -lf /var/lib/dhclient/dhclient-eth0.leases -B -d -H `hostname` eth0'))
+                                               'dhclient -v -r -lf /var/lib/dhclient/dhclient-eth0.leases -B -d -H `hostname` eth0; poweroff -f'))
 
         nodes = capture['installNodes']['nodes']
 

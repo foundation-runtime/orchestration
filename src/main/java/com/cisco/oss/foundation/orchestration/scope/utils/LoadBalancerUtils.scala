@@ -16,16 +16,14 @@
 
 package com.cisco.oss.foundation.orchestration.scope.utils
 
-import com.cisco.oss.foundation.orchestration.scope.ScopeConstants
+import com.cisco.oss.foundation.orchestration.scope.model.{Network, Node}
 import com.google.common.collect.ImmutableList
-import org.jclouds.scriptbuilder.domain.{OsFamily, StatementList, Statement}
 import org.jclouds.scriptbuilder.domain.Statements._
-import com.cisco.oss.foundation.orchestration.scope.model.Node
-import scala.io.Source
-import scala.concurrent.ExecutionContext.Implicits.global
+import org.jclouds.scriptbuilder.domain.{OsFamily, Statement, StatementList}
+
 import scala.collection.JavaConversions._
-import com.cisco.oss.foundation.orchestration.scope.model.Network
 import scala.concurrent.ExecutionContext
+import scala.io.Source
 
 /**
  * Created with IntelliJ IDEA.
@@ -117,7 +115,7 @@ class LoadBalancerUtils(port: Int, applicationName: String, urlPrefix: String, i
 
     createVMFuture onSuccess {
       case nodeMetadata => {
-        val results = utils.runScriptOnNode(nginxConfigurationScript(nodeMetadata.hostname, port.toString), "configure_load_balancer", nodeMetadata, rsaKeyPair.get("private").get)
+        val results = utils.runScriptOnNode(nginxConfigurationScript(nodeMetadata.hostname, port.toString), "configure_load_balancer", nodeMetadata, rsaKeyPair.get("private").get, true)
         results.getExitStatus match {
           case 0 =>
           case _ => throw new IllegalStateException("Failed to configure load balancer.")

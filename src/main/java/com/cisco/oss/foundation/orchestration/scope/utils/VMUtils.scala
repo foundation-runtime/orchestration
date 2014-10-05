@@ -19,13 +19,13 @@ package com.cisco.oss.foundation.orchestration.scope.utils
 import com.cisco.oss.foundation.configuration.ConfigUtil
 import com.cisco.oss.foundation.orchestration.scope.ScopeConstants
 import com.cisco.oss.foundation.orchestration.scope.model.{InstallationPart, Node, ScopeNodeMetadata}
-import com.cisco.oss.foundation.orchestration.scope.scripting.ScalaScriptEngineWrapper
 import com.cisco.oss.foundation.orchestration.scope.provision.exception.ScopeProvisionException
 import com.cisco.oss.foundation.orchestration.scope.provision.model.{ProductRepoInfo, RoleInfo}
+import com.cisco.oss.foundation.orchestration.scope.scripting.ScalaScriptEngineWrapper
 import com.google.common.base.Predicate
 import org.apache.commons.net.util.SubnetUtils
 import org.jclouds.compute.RunNodesException
-import org.jclouds.compute.domain.{ComputeMetadata, ComputeType, NodeMetadata}
+import org.jclouds.compute.domain.{ExecResponse, ComputeMetadata, ComputeType, NodeMetadata}
 import org.jclouds.compute.options.TemplateOptions.Builder._
 import org.jclouds.domain.LoginCredentials
 import org.jclouds.scriptbuilder.domain.OsFamily
@@ -136,31 +136,19 @@ class VMUtils extends Slf4jLogger {
       }
     }
 
-//    val vgNames = List("vg_root", "vg_opt_nds", "vg_log")
-//
-//    node.nodeType match {
-//      case "app" => {
-//        val size = node.
-//      }
-//      case "db" =>
-//    }
-//
-//
-//    val mountDisks = new MapDiskStatements()
-    //val script = generateInitScript(networkAddress, gateway, baseRepoMachine, imageVersion, hasPublicIP, openPorts)
-
-    val (imageId, imageScript) = node.image match {
+    val (imageId, imageScript, imageVersion) = node.image match {
       case Some(img) => {
         val id: String = ScopeUtils.configuration.getString(s"cloud.provider.${VMUtils.cloudProvider}.image.id.$img")
         val script: String = ScopeUtils.configuration.getString(s"cloud.provider.${VMUtils.cloudProvider}.image.id.$img.script", "")
-        (id, script)
+        val version: String = ScopeUtils.configuration.getString(s"cloud.provider.${VMUtils.cloudProvider}.image.id.$img.version", VMUtils.imageVersion)
+        (id, script, version)
       }
-      case None => (VMUtils.defaultImageId, VMUtils.defaultImageScript)
+      case None => (VMUtils.defaultImageId, VMUtils.defaultImageScript, VMUtils.imageVersion)
     }
 
     def scriptString: Option[String] = {
       if (node.postConfiguration){
-        val bootstrapStatements: BootstrapStatements = new BootstrapStatements(VMUtils.privateSubnets, VMUtils.baseRepoUrl, VMUtils.imageVersion, hasPublicIP, node.name, openPorts, VMUtils.cloudProvider)
+        val bootstrapStatements: BootstrapStatements = new BootstrapStatements(VMUtils.privateSubnets, VMUtils.baseRepoUrl, imageVersion, hasPublicIP, node.name, openPorts, VMUtils.cloudProvider)
         val script = VMUtils.cloudProvider match {
           case "vsphere" => {
             val shellScriptLoader: ShellScriptLoader = new ShellScriptLoader(VMUtils.imageScriptDir, imageScript)
@@ -259,12 +247,17 @@ class VMUtils extends Slf4jLogger {
         .privateKey(privateKey).build()).nameTask(scriptName))
   }
 
-  def runScriptOnNode(runScript: String, scriptName: String, nodeMetaData: ScopeNodeMetadata, privateKey: String) = {
-    computeServiceContext.getComputeService.runScriptOnNode(nodeMetaData.id,
+  private def runScriptOnNode(runScript: String, scriptName: String, id: String, credentials: LoginCredentials, runAsRoot: Boolean): ExecResponse = {
+    computeServiceContext.getComputeService.runScriptOnNode(id,
       runScript,
-      overrideLoginCredentials(LoginCredentials.builder()
-        .user("root")
-        .privateKey(privateKey).build()).nameTask(scriptName))
+      overrideLoginCredentials(credentials).runAsRoot(runAsRoot).nameTask(scriptName))
+  }
+
+  def runScriptOnNode(runScript: String, scriptName: String, nodeMetaData: ScopeNodeMetadata, privateKey: String, runAsRoot: Boolean): ExecResponse = {
+    runScriptOnNode(runScript, scriptName,nodeMetaData.id, LoginCredentials.builder().user(nodeMetaData.sshUser).privateKey(privateKey).build(), runAsRoot)
+  }
+  def runScriptOnNode(runScript: String, scriptName: String, nodeMetaData: ScopeNodeMetadata, user: String, password: String, runAsRoot: Boolean): ExecResponse = {
+    runScriptOnNode(runScript, scriptName,nodeMetaData.id, LoginCredentials.builder().user(user).password(password).build(), runAsRoot)
   }
 
   def getServerListByGroupAndTags(group: String, tags: List[String] = List()) = {
@@ -394,6 +387,23 @@ class VMUtils extends Slf4jLogger {
     computeServiceContext.getComputeService.listNodesDetailsMatching(filter).map((node) => this.JcloudsNodeMetaDataToScopeNodeMetaData(node, node.getStatus.toString))
   }
 
+  def findNodeByName(name: String) = {
+    val filter = new Predicate[ComputeMetadata] {
+      def apply(computeMetadata: ComputeMetadata): Boolean = {
+        try {
+          computeMetadata.getName.equals(name)
+        } catch {
+          case t:Throwable => false
+        }
+      }
+    }
+    val scopeNodeMetadatas = computeServiceContext.getComputeService.listNodesDetailsMatching(filter).map((node) => this.JcloudsNodeMetaDataToScopeNodeMetaData(node, node.getStatus.toString))
+    scopeNodeMetadatas match {
+      case v if v.size > 0 => Some(v.head)
+      case v if v.size == 0 => None
+    }
+  }
+
 
   def deployVM(nodeMetadata: ScopeNodeMetadata, role: String, productRepoUrl: String, productName: String, productVersion: String, installationPart: InstallationPart) = {
     installationPart.puppet match {
@@ -404,7 +414,7 @@ class VMUtils extends Slf4jLogger {
         val roleInfo = new RoleInfo(role, "scope", puppet.script, jsonConfiguration)
 
         val script = new ProvisionStatements(productRepoInfo, roleInfo)
-        val scriptOutput = runScriptOnNode(script.render(OsFamily.UNIX), s"apply_puppet${java.lang.System.currentTimeMillis()}", nodeMetadata, nodeMetadata.privateKey.getOrElse(throw new IllegalArgumentException("No rsa private key for node.")))
+        val scriptOutput = runScriptOnNode(script.render(OsFamily.UNIX), s"apply_puppet${java.lang.System.currentTimeMillis()}", nodeMetadata, nodeMetadata.privateKey.getOrElse(throw new IllegalArgumentException("No rsa private key for node.")), true)
 
         scriptOutput.getExitStatus match {
           case 0 => logInfo("Finished deploy VM. {} in group {}", nodeMetadata.hostname, nodeMetadata.group)

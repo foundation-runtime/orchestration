@@ -33,6 +33,7 @@ import org.jclouds.compute.domain.{ExecResponse, NodeMetadata}
 import org.jclouds.scriptbuilder.ScriptBuilder
 import org.jclouds.scriptbuilder.domain.OsFamily
 import org.jclouds.scriptbuilder.domain.Statements._
+import org.jclouds.scriptbuilder.statements.ssh.AuthorizeRSAPublicKeys
 import org.jclouds.ssh.SshKeys
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -294,8 +295,31 @@ trait BasicResource extends Slf4jLogger {
     }
     val futuresList = nodes.map {
       node => {
-        instance = updateInstanceStatusDetails(instance, s"Creating machine ${node.name}")
-        vmUtils.createVM(system.systemId, instance.instanceName, instance.product.productName, node, rsaKeyPair)
+        node.existingInstance match {
+          case None => {
+            instance = updateInstanceStatusDetails(instance, s"Creating machine ${node.name}")
+            vmUtils.createVM(system.systemId, instance.instanceName, instance.product.productName, node, rsaKeyPair)
+          }
+          case Some(details) => {
+            future {
+              vmUtils.findNodeByName(node.name) match {
+                case Some(vm) => {
+                  val script = new ExistsMachineBootstrapStatements(VMUtils.baseRepoUrl, node.osVersion)
+                  script.addStatement(new AuthorizeRSAPublicKeys(Set(rsaKeyPair.get("public").get)))
+                  //script.addStatement(new InstallRSAPrivateKey(rsaKeyPair.get("private").get))
+                  vmUtils.runScriptOnNode(script.render(OsFamily.UNIX), "scope_bootstrap", vm, details.user, details.password, false)
+                  val privateIps: Set[String] = if (vm.privateAddresses.size == 0) {
+                    Set(details.ip)
+                  } else {
+                    vm.privateAddresses
+                  }
+                  vm.copy(hostname = vm.hostname.toLowerCase(), privateAddresses = privateIps, sshUser = details.user, group = "exists_node", existMachine = true)
+                }
+                case None => throw new RuntimeException(s"Can NOT find VM with name ${node.name}");
+              }
+            }
+          }
+        }
       }
     }
 
@@ -621,7 +645,7 @@ trait BasicResource extends Slf4jLogger {
         this.componentInstallation.delete(configurationServer, name)
         val script = new ScriptBuilder().addStatement(exec(s"sed -i '/$name/d' /etc/hosts"))
         try {
-          vmUtils.runScriptOnNode(script.render(OsFamily.UNIX), s"delete_from_hosts${java.lang.System.currentTimeMillis()}", configurationServer, configurationServer.privateKey.getOrElse(throw new IllegalArgumentException("missing rsa private key for configuration server.")))
+          vmUtils.runScriptOnNode(script.render(OsFamily.UNIX), s"delete_from_hosts${java.lang.System.currentTimeMillis()}", configurationServer, configurationServer.privateKey.getOrElse(throw new IllegalArgumentException("missing rsa private key for configuration server.")), true)
         } catch {
           case e: Exception => logError("Delete VM: Removing hostname from Configuration server failed - Configuration server host not accessible")
         }
@@ -652,8 +676,8 @@ trait BasicResource extends Slf4jLogger {
                       case name => {
                         try {
                           machineIds.get(name) match {
-                            case Some(n) => vmUtils.runScriptOnNode(builder.render(OsFamily.UNIX), "preDelete", n, privateKey)
-                            case None =>{
+                            case Some(n) => vmUtils.runScriptOnNode(builder.render(OsFamily.UNIX), "preDelete", n, privateKey, true)
+                            case None => {
                               val hosts: List[String] = scriptsMap.getOrElse(builder, List())
                               scriptsMap.put(builder, name :: hosts)
                             }
@@ -666,7 +690,7 @@ trait BasicResource extends Slf4jLogger {
                   }
                 }
               }
-              scriptsMap.foreach{
+              scriptsMap.foreach {
                 case (builder, hosts) => {
                   val privateKey = ins.rsaKeyPair.getOrElse("private", throw new Exception(s"${ScopeErrorMessages.NO_RSA} for INSTANCE ( ${ins.instanceName} )."))
                   vmUtils.runScriptOnMatchingNodes(builder.render(OsFamily.UNIX), "preDelete", hosts, privateKey = privateKey)
@@ -688,8 +712,10 @@ trait BasicResource extends Slf4jLogger {
     machineIds.values match {
       case vals: Iterable[ScopeNodeMetadata] if vals.size > 0 => {
         vals.foreach((hostDetails) => {
-          logInfo("Deleting vm: {} id: {}", hostDetails.hostname, hostDetails.id)
-          vmUtils.deleteVM(hostDetails)
+          if (!hostDetails.existMachine) {
+            logInfo("Deleting vm: {} id: {}", hostDetails.hostname, hostDetails.id)
+            vmUtils.deleteVM(hostDetails)
+          }
         })
       }
       case _ => {

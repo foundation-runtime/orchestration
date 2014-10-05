@@ -112,7 +112,7 @@ class BootstrapStatements(val networkAddress: List[(SubnetUtils, String)], val b
     statements.add(exec("echo 'gpgcheck=0' >> /etc/yum.repos.d/scope.repo"))
     statements.add(exec("yum -y install ruby"))
     statements.add(exec("yum -y install libselinux-ruby"))
-    if (osVersion == 5)
+    if (osVersion.equals("5"))
       statements.add(exec("yum -y install puppet-2.7.21-1"))
     else
       statements.add(exec("yum -y install puppet-2.7.21-1.el6"))

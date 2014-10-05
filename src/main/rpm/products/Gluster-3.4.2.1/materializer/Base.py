@@ -157,8 +157,17 @@ class materializerBase(object):
         return scriptSection
         pass
 
-    def createNode(self, name, internal = True, public = False):
-        '''
+    def createExistingInstance(self, user, password, ip=''):
+        existingInstance = dict()
+        existingInstance['ip'] = ip
+        existingInstance['user'] = user
+        existingInstance['password'] = password
+        return existingInstance
+        pass
+
+    def createNode(self, name, dnsRoles=None, internal=True, public=False, openPorts=None, minDisk='10', minRam='1024',
+                   minCores='2', osVersion='6', imageName=None, internalId=None, existingInstance=None):
+        """
         sample:
         {
             "id":"",
@@ -169,38 +178,50 @@ class materializerBase(object):
             "region":"US-EAST",
             "minDisk":10,
             "minRam":256,
-            "minCores":16,
+            "minCores":4,
             "network":[
                 {
                     "nicType":"internal",
                     "nicAlias":"this value will be set in hosts files"
                 }
             ]
-		}
-        '''
+        }
+        """
         node = dict()
         node['id'] = ''
         node['name'] = name
         node['arch'] = 'x86-64'
         node['osType'] = 'RedHat'
-        node['osVersion'] = '6.0'
+        node['osVersion'] = osVersion
         node['region'] = 'US-EAST'
-        node['minDisk'] = '20'
-        node['minRam'] = '4000'
-        node['minCores'] = '2'
+        if imageName:
+            node['image'] = imageName
+        node['minDisk'] = minDisk
+        node['minRam'] = minRam
+        node['minCores'] = minCores
+        node['postConfiguration'] = True
+        node['folder'] = self.systemId.upper()
         networks = []
         if internal:
             network = dict()
             network['nicType'] = 'internal'
             network['nicAlias'] = name
+            if internalId:
+                network['networkId'] = internalId
             networks.append(network)
+
         if public:
             network = dict()
             network['nicType'] = 'public'
             network['nicAlias'] = name + "_public"
+            if dnsRoles:
+                network['dnsServices'] = dnsRoles
+            if openPorts:
+                network['openPorts'] = openPorts
             networks.append(network)
 
         node['network'] = networks
+        node['existingInstance'] = existingInstance
         return node
 
     def createConfigurationServer(self, processName, baseConfigProperties = list(), additionalValues = dict()):
