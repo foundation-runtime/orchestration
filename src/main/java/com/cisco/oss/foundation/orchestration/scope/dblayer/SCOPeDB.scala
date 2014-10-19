@@ -32,7 +32,7 @@ trait SCOPeDB {
   def findSystem(systemId: String): Option[System]
   def createInstance(instance: Instance)
   def updateInstance(instance: Instance)
-  def updateMachineStatus(instanceId: String, machineName: String, status: String)
+  def updateMachineStatus(systemId: String, instanceId: String, machineName: String, status: String)
   def findInstance(instanceId: String): Option[Instance]
   def findInstanceBySystemId(systemId: String): Option[util.Collection[Instance]]
   def deleteSystem(systemId: String)

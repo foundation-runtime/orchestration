@@ -22,6 +22,7 @@ import com.cisco.oss.foundation.orchestration.scope.resource.{SystemNotFound, In
 import java.util
 import com.cisco.oss.foundation.orchestration.scope.model.{Service, Instance, System, Product}
 import com.cisco.oss.foundation.orchestration.scope.utils.ScopeUtils
+import com.mongodb.casbah.commons.MongoDBObject
 import org.springframework.stereotype.Component
 import com.mongodb.casbah.Imports._
 import com.novus.salat._
@@ -283,11 +284,25 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
     }
   }
 
-  def updateMachineStatus(instanceId: String, machineName: String, status: String): Unit = {
+  def updateMachineStatus(systemId: String, instanceId: String, machineName: String, status: String): Unit = {
     ScopeUtils.time(logger, "updateMachineStatus-db") {
       val q = MongoDBObject("_id" -> instanceId)
       val u = $set(s"machineIds.$machineName.provisionStatus" -> status)
-      instancesdb.update(q, u)
+      val lock = instanceLockMap.get(s"$systemId-$instanceId", Some(new ReentrantLock(true)))
+      lock match {
+        case Some(l) => l.lock()
+        case None =>
+        case _ =>
+      }
+      try {
+        instancesdb.update(q, u)
+      } finally {
+        lock match {
+          case Some(l) => l.unlock()
+          case None =>
+          case _ =>
+        }
+      }
     }
   }
 }
