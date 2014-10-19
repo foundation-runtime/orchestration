@@ -16,19 +16,16 @@
 
 package com.cisco.oss.foundation.orchestration.scope.dblayer.mongodb
 
-import org.junit.{AfterClass, BeforeClass, Test}
-import de.flapdoodle.embed.mongo.config.{Net, MongodConfigBuilder}
+import com.cisco.oss.foundation.orchestration.scope.model.{Instance, Product, ScopeNodeMetadata}
+import com.cisco.oss.foundation.orchestration.scope.utils.ScopeUtils
+import com.mongodb.casbah.Imports._
+import com.novus.salat._
+import com.novus.salat.global._
+import de.flapdoodle.embed.mongo.config.{MongodConfigBuilder, Net}
 import de.flapdoodle.embed.mongo.distribution.Version
 import de.flapdoodle.embed.mongo.{MongodExecutable, MongodStarter}
 import de.flapdoodle.embed.process.runtime.Network
-import com.mongodb.casbah.Imports._
-import com.novus.salat.global._
-import com.cisco.oss.foundation.orchestration.scope.utils.ScopeUtils
-import com.cisco.oss.foundation.orchestration.scope.model._
-import com.novus.salat._
-import com.cisco.oss.foundation.orchestration.scope.model.Product
-import com.cisco.oss.foundation.orchestration.scope.model.Instance
-import com.cisco.oss.foundation.orchestration.scope.model.ScopeNodeMetadata
+import org.junit.{AfterClass, BeforeClass, Test}
 
 /**
  * Created with IntelliJ IDEA.
@@ -207,7 +204,7 @@ class SCOPeDBMongoImplTest {
 
     println(instance)
 
-    db.updateMachineStatus("52e76356e4b0ad9aa68837fe", "izek-www-upm0", "STARTED")
+    db.updateMachineStatus(instance.get.systemId, "52e76356e4b0ad9aa68837fe", "izek-www-upm0", "STARTED")
 
     val instance1 = db.findInstance("52e76356e4b0ad9aa68837fe")
 

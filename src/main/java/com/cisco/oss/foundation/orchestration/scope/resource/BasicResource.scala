@@ -414,7 +414,7 @@ trait BasicResource extends Slf4jLogger {
         if (!ScopeUtils.configuration.getBoolean(ScopeConstants.CLOUD_ENV_HAS_DNS, false)) {
           logInfo(s"Configuring /etc/hosts for Group $groupName")
           val scriptResults = vmUtils.runScriptOnMatchingNodes(vmHostsScript.render(OsFamily.UNIX), "edit_hosts", Some(groupName), None, Some(List(instance.product.productName)), privateKey)
-          if (!checkRunScriptResults(scriptResults.toMap, instance.instanceId)) {
+          if (!checkRunScriptResults(scriptResults.toMap, instance.instanceId, instance.systemId)) {
             validateInstanceStatus(instance)
             result.failure(new IllegalStateException("Provisioning failed."))
             return result.future
@@ -451,23 +451,29 @@ trait BasicResource extends Slf4jLogger {
 
             val stepFutureList = currentHosts map {
               case hostDetails => {
-                logInfo(s"Start deploy VM : { id: ${hostDetails.id}, name: ${hostDetails.hostname}, IP: ${hostDetails.privateAddresses.head} }")
-                updateMachineStatus(instance, hostDetails.hostname, s"Start $step", None)
-                val puppetRole = hostsMap.get(hostDetails.hostname)
+                val vmDetails = if (hostDetails.privateAddresses.size == 0) {
+                  vmUtils.findVM(hostDetails.id).get
+                } else {
+                  hostDetails
+                }
+
+                logInfo(s"Start deploy VM : { id: ${vmDetails.id}, name: ${vmDetails.hostname}, IP: ${vmDetails.privateAddresses.head} }")
+                updateMachineStatus(instance, vmDetails.hostname, s"Start $step", None)
+                val puppetRole = hostsMap.get(vmDetails.hostname)
                 puppetRole match {
                   case Some(role) => {
                     val puppetApplyFuture = future {
                       Thread.sleep(1000)
                       try {
-                        vmUtils.deployVM(hostDetails.copy(privateKey = Some(privateKey)), puppetScriptName, instance.product.repoUrl, instance.product.productName, instance.product.productVersion, role)
+                        vmUtils.deployVM(vmDetails.copy(privateKey = Some(privateKey)), puppetScriptName, instance.product.repoUrl, instance.product.productName, instance.product.productVersion, role)
                       } catch {
                         case e: Exception => {
-                          logError(s"Failed to deploy VM ${hostDetails.hostname}, error: ${e.toString}", e)
+                          logError(s"Failed to deploy VM ${vmDetails.hostname}, error: ${e.toString}", e)
                           throw e
                         }
                       }
 
-                      Some(hostDetails)
+                      Some(vmDetails)
                     }
 
                     puppetApplyFuture onSuccess {
@@ -478,7 +484,7 @@ trait BasicResource extends Slf4jLogger {
 
                     puppetApplyFuture onFailure {
                       case throwable =>
-                        logError("Provisioning failed", throwable)
+                        logError(s"Provisioning failed: ${throwable.toString}", throwable)
                         instance = updateInstanceStatus(newInst, ScopeConstants.FAILED, Some(throwable.toString), None, None)
                     }
                     puppetApplyFuture
@@ -531,7 +537,7 @@ trait BasicResource extends Slf4jLogger {
     endpoint
   }
 
-  protected def checkRunScriptResults(scriptResults: Map[_ <: NodeMetadata, ExecResponse], instanceId: String): Boolean = {
+  protected def checkRunScriptResults(scriptResults: Map[_ <: NodeMetadata, ExecResponse], instanceId: String, systemId: String): Boolean = {
     scriptResults.foreach {
       case (node, execResponse) => {
         execResponse.getExitStatus match {
@@ -539,7 +545,7 @@ trait BasicResource extends Slf4jLogger {
           case status => {
             logError(s"stderr : ${execResponse.getError}")
             logError(s"stdout : ${execResponse.getOutput}")
-            scopedb.updateMachineStatus(instanceId, vmUtils.getNameFromNodeMetadata(node), ScopeConstants.FAILED)
+            scopedb.updateMachineStatus(systemId, instanceId, vmUtils.getNameFromNodeMetadata(node), ScopeConstants.FAILED)
             return false
           }
         }
@@ -550,7 +556,7 @@ trait BasicResource extends Slf4jLogger {
 
 
   private def updateMachineStatus(instance: Instance, machineName: String, status: String, detail: Option[String]) {
-    scopedb.updateMachineStatus(instance.instanceId, machineName, status)
+    scopedb.updateMachineStatus(instance.systemId, instance.instanceId, machineName, status)
   }
 
   private def updateInstanceStatus(instance: Instance, status: String, detail: Option[String], ip: Option[String], hostname: Option[String]): Instance = {
