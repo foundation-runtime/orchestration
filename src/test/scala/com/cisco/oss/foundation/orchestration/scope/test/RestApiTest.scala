@@ -16,41 +16,30 @@
 
 package com.cisco.oss.foundation.orchestration.scope.test
 
-import org.junit.{AfterClass, BeforeClass, Test}
-import org.scalatest.junit.JUnitSuite
-import org.scalatest.junit.MustMatchersForJUnit
-import org.scalatest.junit.ShouldMatchersForJUnit
-import com.cisco.oss.foundation.orchestration.scope.main.{RunScope => RunScopeMain}
-import net.liftweb.json._
-import com.cisco.oss.foundation.orchestration.scope.utils.ScopeUtils
-import com.cisco.oss.foundation.orchestration.scope.utils.Slf4jLogger
-import com.cisco.oss.foundation.orchestration.scope.model._
-import scala.collection.immutable.Map
+import com.cisco.oss.foundation.http.apache.ApacheHttpClientFactory
+import com.cisco.oss.foundation.http.{HttpMethod, HttpRequest, HttpResponse}
 import com.cisco.oss.foundation.orchestration.scope.dblayer.SCOPeDB
-import org.springframework.beans.factory.annotation.Autowired
-import org.junit.runner.RunWith
-import org.springframework.test.context.ContextConfiguration
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
-import de.flapdoodle.embed.mongo.distribution.Version
+import com.cisco.oss.foundation.orchestration.scope.main.{RunScope => RunScopeMain}
+import com.cisco.oss.foundation.orchestration.scope.model.{AccessPoint, ControlStatusRequest, Instance, Product, ProductOption, ProvisionRequest, System, _}
+import com.cisco.oss.foundation.orchestration.scope.utils.{ScopeUtils, Slf4jLogger}
+import com.mongodb.casbah.Imports._
+import com.novus.salat._
+import com.novus.salat.global._
 import de.flapdoodle.embed.mongo.config.{MongodConfigBuilder, Net}
+import de.flapdoodle.embed.mongo.distribution.Version
 import de.flapdoodle.embed.mongo.{MongodExecutable, MongodStarter}
 import de.flapdoodle.embed.process.runtime.Network
-import com.mongodb.casbah.Imports._
-import com.novus.salat.global._
-import scala.collection.JavaConversions._
+import net.liftweb.json._
+import org.junit.runner.RunWith
+import org.junit.{AfterClass, BeforeClass, Test}
+import org.scalatest.junit.{JUnitSuite, MustMatchersForJUnit, ShouldMatchersForJUnit}
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.MediaType
+import org.springframework.test.context.ContextConfiguration
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 
-import com.novus.salat._
-import com.cisco.oss.foundation.orchestration.scope.model.ControlStatusRequest
-import com.cisco.oss.foundation.orchestration.scope.model.Instance
-import scala.Some
-import com.cisco.oss.foundation.orchestration.scope.model.ProductOption
-import com.cisco.oss.foundation.orchestration.scope.model.AccessPoint
-import com.cisco.oss.foundation.orchestration.scope.model.Product
-import com.cisco.oss.foundation.orchestration.scope.model.System
-import com.cisco.oss.foundation.orchestration.scope.model.ProvisionRequest
-import com.cisco.oss.foundation.http.apache.ApacheHttpClientFactory
-import com.cisco.oss.foundation.http.{HttpResponse, HttpMethod, HttpRequest}
-import com.cisco.oss.foundation.flowcontext.FlowContextFactory
+import scala.collection.JavaConversions._
+import scala.collection.immutable.Map
 
 object RestApiTest extends Slf4jLogger {
 
@@ -109,6 +98,7 @@ object RestApiTest extends Slf4jLogger {
         ProductOption("sampleKey3", None, "boolean sample key", None, OptionType.BOOLEAN, "true", None, false),
         ProductOption("sampleKey4", None, "file sample key", None, OptionType.FILE, "", None, false)),
       productRepoUrl
+
     )
 
 
@@ -122,6 +112,16 @@ object RestApiTest extends Slf4jLogger {
         ProductOption("sampleKey3", None, "boolean sample key", None, OptionType.BOOLEAN, "true", None, false),
         ProductOption("sampleKey4", None, "file sample key", None, OptionType.FILE, "", None, false)),
       productRepoUrl
+    )
+    productsdb insert (grater[Product].asDBObject(product))
+
+    product = Product("Gluster-3.2.1.4", "Gluster", "3.2.1.4",
+      List(
+        ProductOption("sampleKey1", None, "String sample key", None, OptionType.STRING, "defVal1", Some(Array[String]("defVal1", "defVal2", "defVal3")), false),
+        ProductOption("sampleKey2", None, "int sample key", None, OptionType.NUMBER, "123", None, false),
+        ProductOption("sampleKey3", None, "boolean sample key", None, OptionType.BOOLEAN, "true", None, false),
+        ProductOption("sampleKey4", None, "file sample key", None, OptionType.FILE, "", None, false)),
+      "http://localhost/scope-products/Gluster-3.2.1.4/"
     )
 
     productsdb insert (grater[Product].asDBObject(product))
@@ -251,7 +251,7 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
   @Test def testCreateSystemAndFail() {
 
-    var request = HttpRequest.newBuilder()
+    val request = HttpRequest.newBuilder()
       .uri("http://localhost:6401/systems/123456")
       .httpMethod(HttpMethod.POST)
       //      .header("Accept", "test/plain")
@@ -259,7 +259,7 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
       .contentType("text/plain")
       .build();
 
-    var response = RestApiTest.httpClient.executeDirect(request)
+    val response = RestApiTest.httpClient.executeDirect(request)
 
     //    val response = RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456")
     //      .method(HttpMethod.POST)
@@ -267,6 +267,36 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
     println(response.getResponseAsString)
     response.getStatus() should equal(400)
+  }
+
+  @Test def testUpdateInstance() {
+    val productRepoUrl = "http://localhost/scope-products/Gluster-3.2.1.4/"
+    val product = Product("Gluster-3.2.1.4", "Gluster", "3.2.1.4",
+      List(
+        ProductOption("sampleKey1", None, "String sample key", None, OptionType.STRING, "defVal1", Some(Array[String]("defVal1", "defVal2", "defVal3")), false),
+        ProductOption("sampleKey2", None, "int sample key", None, OptionType.NUMBER, "123", None, false),
+        ProductOption("sampleKey3", None, "boolean sample key", None, OptionType.BOOLEAN, "true", None, false),
+        ProductOption("sampleKey4", None, "file sample key", None, OptionType.FILE, "", None, false)),
+      productRepoUrl
+    )
+    val instanceId = "wawaw"
+    scopedb.createInstance(Instance(instanceId, "12345", "update", None, None, product, Map(), List(), None, Map()))
+
+
+
+    val data: UpdateInstanceData = UpdateInstanceData("Patch1", None, Map("step0" -> InstallModules(List(PuppetModule("Gluster", "3.2.1.4", None, None, None)))))
+    val request = HttpRequest.newBuilder()
+      .uri(s"http://localhost:6401/products/Gluster-3.2.1.4/instance/$instanceId")
+      .httpMethod(HttpMethod.PUT)
+      .entity(ScopeUtils.mapper.writeValueAsString(data))
+      .contentType(MediaType.APPLICATION_JSON_VALUE)
+      .build();
+
+    val response = RestApiTest.httpClient.executeDirect(request)
+
+    println(response.getResponseAsString)
+    val productFromDb: Product = scopedb.getProductDetails("Gluster", "3.2.1.4").get
+    response.getStatus() should equal(200)
   }
 
   @Test def testSystemInstances() {

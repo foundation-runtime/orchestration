@@ -1,7 +1,7 @@
 class gluster {
   package { 'glusterfs-server':
     provider => 'yum',
-    ensure => installed
+    ensure   => installed
   }
   service { 'glusterd':
     enable    => true,

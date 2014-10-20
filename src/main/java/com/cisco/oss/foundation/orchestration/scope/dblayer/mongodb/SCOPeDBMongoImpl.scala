@@ -16,20 +16,24 @@
 
 package com.cisco.oss.foundation.orchestration.scope.dblayer.mongodb
 
-import com.cisco.oss.foundation.orchestration.scope.dblayer.SCOPeDB
-import com.cisco.oss.foundation.orchestration.scope.utils.Slf4jLogger
-import com.cisco.oss.foundation.orchestration.scope.resource.{SystemNotFound, InstanceNotFound, ProductNotFound, ProductAlreadyExists}
 import java.util
-import com.cisco.oss.foundation.orchestration.scope.model.{Service, Instance, System, Product}
-import com.cisco.oss.foundation.orchestration.scope.utils.ScopeUtils
-import org.springframework.stereotype.Component
-import com.mongodb.casbah.Imports._
+import java.util.concurrent.ConcurrentHashMap
+
+import com.cisco.oss.foundation.orchestration.scope.dblayer.SCOPeDB
+import com.cisco.oss.foundation.orchestration.scope.model._
+import com.cisco.oss.foundation.orchestration.scope.resource.{InstanceNotFound, ProductAlreadyExists, ProductNotFound, SystemNotFound}
+import com.cisco.oss.foundation.orchestration.scope.utils.{ScopeUtils, Slf4jLogger}
+import com.mongodb.MongoException.DuplicateKey
+import com.mongodb.WriteConcern
+import com.mongodb.casbah.MongoClient
+import com.mongodb.casbah.commons.MongoDBObject
+import com.mongodb.casbah.query.Imports._
 import com.novus.salat._
 import com.novus.salat.global._
-import com.mongodb.MongoException.DuplicateKey
-import java.util.concurrent.ConcurrentHashMap
-import scala.actors.threadpool.locks.ReentrantLock
+import org.springframework.stereotype.Component
 
+import scala.actors.threadpool.locks.ReentrantLock
+import scala.compat.Platform
 
 @Component
 class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
@@ -37,22 +41,23 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
   val host = ScopeUtils.configuration.getString("mongodb.host", "localhost")
   val port = ScopeUtils.configuration.getInt("mongodb.port", 27017)
 
-  val mongodbConnetion = MongoConnection(host, port)
+  val mongodbConnetion = MongoClient(host, port)
   val scopedb = mongodbConnetion("scope")
-  scopedb.writeConcern = WriteConcern.FsyncSafe
+  scopedb.writeConcern = WriteConcern.FSYNC_SAFE
   val systemsdb = scopedb("systems")
   val productsdb = scopedb("products")
+  val productsPatchesdb = scopedb("products-patches")
   val servicesdb = scopedb("services")
   val instancesdb = scopedb("instances")
 
-//  instancesdb.find().map(dbObj => grater[Instance].asObject(dbObj)).foreach{
-//    case instance => {
-//      val id = instance.instanceId
-//      val system = instance.systemId
-//      val lock: ReentrantLock = new ReentrantLock(true)
-//      instanceLockMap.put(system + "-" + id, Some(lock))
-//    }
-//  }
+  //  instancesdb.find().map(dbObj => grater[Instance].asObject(dbObj)).foreach{
+  //    case instance => {
+  //      val id = instance.instanceId
+  //      val system = instance.systemId
+  //      val lock: ReentrantLock = new ReentrantLock(true)
+  //      instanceLockMap.put(system + "-" + id, Some(lock))
+  //    }
+  //  }
 
 
   def findAllSystems: util.List[System] = {
@@ -64,7 +69,7 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
       systems
     }
   }
-  
+
   def createSystem(system: System) = {
     ScopeUtils.time(logger, "createSystem-db") {
       systemsdb.insert(grater[System].asDBObject(system))
@@ -99,7 +104,7 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
   def deleteInstance(systemId: String, instanceId: String) = {
     ScopeUtils.time(logger, "deleteInstance-db") {
 
-      val lock = instanceLockMap.get(systemId + "-" + instanceId)
+      val lock = lockMap.get(systemId + "-" + instanceId)
       lock match {
         case Some(l) => l.lock()
         case None =>
@@ -152,7 +157,7 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
     }
   }
 
-  
+
   def deleteProduct(productName: String, productVersion: String) {
     ScopeUtils.time(logger, "deleteProduct-db") {
       val product = getProductDetails(productName, productVersion).getOrElse(throw new ProductNotFound)
@@ -163,7 +168,7 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
   def getInstanceInfo(instance: Instance): Instance = {
 
     ScopeUtils.time(logger, "getInstanceInfo-db") {
-      val lock = instanceLockMap.get(instance.systemId + "-" + instance.instanceId)
+      val lock = lockMap.get(instance.systemId + "-" + instance.instanceId)
       lock match {
         case Some(l) => l.lock()
         case None =>
@@ -216,7 +221,7 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
 
   }
 
-  val instanceLockMap = new ConcurrentHashMap[String, Option[ReentrantLock]]()
+  val lockMap = new ConcurrentHashMap[String, Option[ReentrantLock]]()
 
   def createInstance(instance: Instance): Unit = {
     ScopeUtils.time(logger, "createInstance-db") {
@@ -224,14 +229,16 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
       val id = instance.instanceId
       val system = instance.systemId
       val lock: ReentrantLock = new ReentrantLock(true)
-      instanceLockMap.put(system + "-" + id, Some(lock))
+      lockMap.put(system + "-" + id, Some(lock))
       instancesdb.update(MongoDBObject("_id" -> instance.instanceId), grater[Instance].asDBObject(instance), true)
     }
   }
 
+  import scala.collection.JavaConversions._
+
   def updateInstance(instance: Instance) = {
     ScopeUtils.time(logger, "updateInstance-db") {
-      val lock = instanceLockMap.get(instance.systemId + "-" + instance.instanceId)
+      val lock = lockMap.getOrElseUpdate(instance.systemId + "-" + instance.instanceId, Some(new ReentrantLock(true)))
       lock match {
         case Some(l) => l.lock()
         case None =>
@@ -283,11 +290,42 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
     }
   }
 
-  def updateMachineStatus(instanceId: String, machineName: String, status: String): Unit = {
+  override def saveProductPatch(productId: String, patchData: UpdateInstanceData): Unit = {
+    ScopeUtils.time(logger, "addProductPatch-db") {
+      productsPatchesdb.save(grater[PatchDBObject].asDBObject(PatchDBObject(s"${Platform.currentTime.toString}_${patchData.patchName}_${productId}",
+        productId,
+        ScopeUtils.mapper.writeValueAsString(patchData))))
+    }
+  }
+
+  def updateMachineStatus(instanceId: String, machineName: String, status: String, modulesName: Option[scala.collection.mutable.Set[String]]): Unit = {
     ScopeUtils.time(logger, "updateMachineStatus-db") {
       val q = MongoDBObject("_id" -> instanceId)
       val u = $set(s"machineIds.$machineName.provisionStatus" -> status)
-      instancesdb.update(q, u)
+      val lock = lockMap.getOrElseUpdate(instanceId, Some(new ReentrantLock(true)))
+      lock match {
+        case Some(l) => l.lock()
+        case None =>
+        case _ =>
+      }
+      try {
+        instancesdb.update(q, u)
+
+        modulesName match {
+          case Some(set) => {
+//            val newSet: Set[String] = Set[String](set.toList: _*)
+            val setInstallModules = $pushAll(s"machineIds.$machineName.installedModules" -> set.toList)
+            instancesdb.update(q, setInstallModules)
+          }
+          case None =>
+        }
+      } finally {
+        lock match {
+          case Some(l) => l.unlock()
+          case None =>
+          case _ =>
+        }
+      }
     }
   }
 }

@@ -286,6 +286,20 @@ trait BasicResource extends Slf4jLogger {
 
   val puppetScriptName: String = "scope"
 
+  def extractModulesName(roleOption: Option[InstallationPart]): scala.collection.mutable.Set[String] = {
+    roleOption match {
+      case Some(role) => {
+        role.puppet match {
+          case Some(puppet) => {
+            puppet.modulesName
+          }
+          case None => scala.collection.mutable.Set[String]()
+        }
+      }
+      case None => scala.collection.mutable.Set[String]()
+    }
+  }
+
   private def createAndDeployVMs(system: System, inst: Instance, deploymentModel: HashMap[String, HashMap[String, InstallationPart]], nodes: List[Node], stepsMap: Map[String, InstallModules]): Future[Instance] = {
     val result = promise[Instance]
     var instance = inst
@@ -313,7 +327,7 @@ trait BasicResource extends Slf4jLogger {
                   } else {
                     vm.privateAddresses
                   }
-                  vm.copy(hostname = vm.hostname.toLowerCase(), privateAddresses = privateIps, sshUser = details.user, group = "exists_node", existMachine = true)
+                  vm.copy(hostname = vm.hostname.toLowerCase(), privateAddresses = privateIps, sshUser = details.user, group = "exists_node", existingMachine = true)
                 }
                 case None => throw new RuntimeException(s"Can NOT find VM with name ${node.name}");
               }
@@ -451,9 +465,13 @@ trait BasicResource extends Slf4jLogger {
 
             val stepFutureList = currentHosts map {
               case hostDetails => {
+
+
+
                 logInfo(s"Start deploy VM : { id: ${hostDetails.id}, name: ${hostDetails.hostname}, IP: ${hostDetails.privateAddresses.head} }")
-                updateMachineStatus(instance, hostDetails.hostname, s"Start $step", None)
                 val puppetRole = hostsMap.get(hostDetails.hostname)
+                val modulesName = extractModulesName(puppetRole)
+                updateMachineStatus(instance, hostDetails.hostname, s"Start $step", None, Some(modulesName))
                 puppetRole match {
                   case Some(role) => {
                     val puppetApplyFuture = future {
@@ -472,7 +490,7 @@ trait BasicResource extends Slf4jLogger {
 
                     puppetApplyFuture onSuccess {
                       case Some(details) =>
-                        updateMachineStatus(instance, details.hostname, s"Finished $step", None)
+                        updateMachineStatus(instance, details.hostname, s"Finished $step", None, None)
                         logInfo(s"Finished deploy VM: id ${details.id}, name ${details.hostname}, IP ${details.privateAddresses.head}")
                     }
 
@@ -539,7 +557,7 @@ trait BasicResource extends Slf4jLogger {
           case status => {
             logError(s"stderr : ${execResponse.getError}")
             logError(s"stdout : ${execResponse.getOutput}")
-            scopedb.updateMachineStatus(instanceId, vmUtils.getNameFromNodeMetadata(node), ScopeConstants.FAILED)
+            scopedb.updateMachineStatus(instanceId, vmUtils.getNameFromNodeMetadata(node), ScopeConstants.FAILED, None)
             return false
           }
         }
@@ -549,8 +567,8 @@ trait BasicResource extends Slf4jLogger {
   }
 
 
-  private def updateMachineStatus(instance: Instance, machineName: String, status: String, detail: Option[String]) {
-    scopedb.updateMachineStatus(instance.instanceId, machineName, status)
+  private def updateMachineStatus(instance: Instance, machineName: String, status: String, detail: Option[String], modulesName: Option[scala.collection.mutable.Set[String]]) {
+    scopedb.updateMachineStatus(instance.instanceId, machineName, status, modulesName)
   }
 
   private def updateInstanceStatus(instance: Instance, status: String, detail: Option[String], ip: Option[String], hostname: Option[String]): Instance = {
@@ -636,7 +654,6 @@ trait BasicResource extends Slf4jLogger {
     }
   }
 
-
   def deleteVmsFromConfigurationServer(configurationServer: ScopeNodeMetadata, machineIds: Map[String, ScopeNodeMetadata], systemUserId: String) = {
     machineIds.foreach {
       case (key, value) =>
@@ -712,7 +729,7 @@ trait BasicResource extends Slf4jLogger {
     machineIds.values match {
       case vals: Iterable[ScopeNodeMetadata] if vals.size > 0 => {
         vals.foreach((hostDetails) => {
-          if (!hostDetails.existMachine) {
+          if (!hostDetails.existingMachine) {
             logInfo("Deleting vm: {} id: {}", hostDetails.hostname, hostDetails.id)
             vmUtils.deleteVM(hostDetails)
           }

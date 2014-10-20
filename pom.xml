@@ -36,6 +36,8 @@
         <scala.version>2.10.3</scala.version>
         <surefire.plugin.version>2.15</surefire.plugin.version>
         <jclouds.version>2.0.0-SNAPSHOT</jclouds.version>
+        <casbah.version>2.7.1</casbah.version>
+        <salat.version>1.9.9</salat.version>
     </properties>
 
     <scm>
@@ -445,35 +447,16 @@
         </dependency>
         <dependency>
             <groupId>org.mongodb</groupId>
-            <artifactId>casbah-core_2.10</artifactId>
-            <version>2.6.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>casbah-query_2.10</artifactId>
-            <version>2.6.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>casbah-gridfs_2.10</artifactId>
-            <version>2.6.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>casbah-commons_2.10</artifactId>
-            <version>2.6.4</version>
+            <artifactId>casbah_2.10</artifactId>
+            <version>${casbah.version}</version>
+            <type>pom</type>
         </dependency>
         <dependency>
             <groupId>com.novus</groupId>
-            <artifactId>salat-core_2.10</artifactId>
-            <version>1.9.4</version>
+            <artifactId>salat_2.10</artifactId>
+            <version>${salat.version}</version>
+            <type>pom</type>
         </dependency>
-        <dependency>
-            <groupId>com.novus</groupId>
-            <artifactId>salat-util_2.10</artifactId>
-            <version>1.9.4</version>
-        </dependency>
-
         <dependency>
             <groupId>xml-apis</groupId>
             <artifactId>xml-apis</artifactId>
@@ -502,7 +485,7 @@
             <dependency>
                 <groupId>org.mongodb</groupId>
                 <artifactId>mongo-java-driver</artifactId>
-                <version>2.11.3</version>
+                <version>2.12.3</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
