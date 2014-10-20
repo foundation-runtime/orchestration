@@ -1,25 +1,26 @@
 package com.cisco.oss.foundation.orchestration.scope.utils
 
-import java.util.concurrent.{ThreadPoolExecutor, LinkedBlockingQueue}
+import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor}
 import javax.annotation.Resource
 
-import com.cisco.oss.foundation.orchestration.scope.{ScopeErrorMessages, ScopeConstants}
 import com.cisco.oss.foundation.orchestration.scope.configuration.IComponentInstallation
 import com.cisco.oss.foundation.orchestration.scope.dblayer.SCOPeDB
 import com.cisco.oss.foundation.orchestration.scope.model._
+import com.cisco.oss.foundation.orchestration.scope.{ScopeConstants, ScopeErrorMessages}
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
+
 import scala.collection.JavaConversions._
 import scala.collection.SortedMap
 import scala.collection.immutable.HashMap
 import scala.concurrent.duration.Duration
-import scala.concurrent._
-
-import scala.concurrent.{duration, Await, Future, ExecutionContext}
+import scala.concurrent.{Await, ExecutionContext, Future, duration, _}
 
 /**
  * Created by igreenfi on 07/10/2014.
  */
-object DeploymentUtils extends Slf4jLogger {
+@Component
+class DeploymentUtils extends Slf4jLogger {
   implicit val executionContext = new FlowContextExecutor(ExecutionContext.fromExecutorService(new ThreadPoolExecutor(50, 500, 5L, java.util.concurrent.TimeUnit.MINUTES, new LinkedBlockingQueue[Runnable]())))
 
   @Autowired var scopedb: SCOPeDB = _
@@ -69,7 +70,7 @@ object DeploymentUtils extends Slf4jLogger {
     scopedb.updateMachineStatus(instance.instanceId, machineName, status, modulesName)
   }
 
-  def deployModules(deploymentModel: HashMap[String, HashMap[String, InstallationPart]], stepsMap: Map[String, InstallModules],vmDetails:List[ScopeNodeMetadata], product: Product, system: System, instance: Instance) = {
+  def deployModules(deploymentModel: HashMap[String, HashMap[String, InstallationPart]], stepsMap: Map[String, InstallModules],vmDetails:List[ScopeNodeMetadata], repoUrl: String, product: Product, system: System, instance: Instance) = {
     // Start deploy.
     var result: Instance = instance
     val privateKey = instance.rsaKeyPair.getOrElse("private", throw new Exception(ScopeErrorMessages.NO_RSA + "for INSTANCE."))
@@ -91,24 +92,29 @@ object DeploymentUtils extends Slf4jLogger {
 
         val stepFutureList = currentHosts map {
           case hostDetails => {
-            logInfo(s"Start deploy VM : { id: ${hostDetails.id}, name: ${hostDetails.hostname}, IP: ${hostDetails.privateAddresses.head} }")
-            val puppetRole = hostsMap.get(hostDetails.hostname)
+            val vmDetails = if (hostDetails.privateAddresses.size == 0) {
+              vmUtils.findVM(hostDetails.id).get
+            } else {
+              hostDetails
+            }
+            logInfo(s"Start deploy VM : { id: ${vmDetails.id}, name: ${vmDetails.hostname}, IP: ${vmDetails.privateAddresses.head} }")
+            val puppetRole = hostsMap.get(vmDetails.hostname)
             val modulesName = extractModulesName(puppetRole)
-            updateMachineStatus(instance, hostDetails.hostname, s"Start $step", None, Some(modulesName))
+            updateMachineStatus(instance, vmDetails.hostname, s"Start $step", None, Some(modulesName))
             puppetRole match {
               case Some(role) => {
                 val puppetApplyFuture = future {
                   Thread.sleep(1000)
                   try {
-                    vmUtils.deployVM(hostDetails.copy(privateKey = Some(privateKey)), puppetScriptName, instance.product.repoUrl, instance.product.productName, instance.product.productVersion, role)
+                    vmUtils.deployVM(vmDetails.copy(privateKey = Some(privateKey)), puppetScriptName, repoUrl, instance.product.productName, instance.product.productVersion, role)
                   } catch {
                     case e: Exception => {
-                      logError(s"Failed to deploy VM ${hostDetails.hostname}, error: ${e.toString}", e)
+                      logError(s"Failed to deploy VM ${vmDetails.hostname}, error: ${e.toString}", e)
                       throw e
                     }
                   }
 
-                  Some(hostDetails)
+                  Some(vmDetails)
                 }
 
                 puppetApplyFuture onSuccess {

@@ -32,7 +32,7 @@ class gluster_configure {
     owner   => $user,
     group   => $group,
     ensure  => directory,
-    before  => File["${bricksDirectory}/${volumeName}"]
+    before  => Exec["gluster_volume_create_${volumeName}"]
   }
 
   file { "${mountDirectory}":
@@ -40,13 +40,6 @@ class gluster_configure {
     group   => $group,
     ensure  => directory,
     before  => Exec["mount_${mountDirectory}"]
-  }
-
-  file { "${bricksDirectory}/${volumeName}":
-    owner   => $user,
-    group   => $group,
-    ensure  => directory,
-    before  => Exec["gluster_volume_create_${volumeName}"]
   }
 
   augeas { "selinux_config":
@@ -61,22 +54,25 @@ class gluster_configure {
 
   exec { "gluster_volume_create_${volumeName}":
   # gluster volume create gv0 replica 2 server1:/data/brick1/gv0 server2:/data/brick1/gv0
-    command => "/usr/sbin/gluster volume create ${volumeName} replica ${peers_size} ${servers_list} force",
-    creates => "/var/lib/glusterd/vols/${volumeName}",
-    before  => Exec["gluster_volume_start_${volumeName}"]
+    command   => "/usr/sbin/gluster volume create ${volumeName} replica ${peers_size} ${servers_list} force",
+    logoutput => true,
+    creates   => "/var/lib/glusterd/vols/${volumeName}",
+    before    => Exec["gluster_volume_start_${volumeName}"]
   }
 
   exec { "gluster_volume_start_${volumeName}":
-    command =>  "/usr/sbin/gluster volume start ${volumeName}",
-    unless  => "[ \"`gluster volume info ${volumeName} | egrep '^Status:'`\" == 'Status: Started' ]",
-    path    => [ '/usr/sbin', '/usr/bin', '/sbin', '/bin' ],
-    before  => Exec["mount_${mountDirectory}"]
+    command   =>  "/usr/sbin/gluster volume start ${volumeName}",
+    logoutput => true,
+    unless    => "[ \"`gluster volume info ${volumeName} | egrep '^Status:'`\" == 'Status: Started' ]",
+    path      => [ '/usr/sbin', '/usr/bin', '/sbin', '/bin' ],
+    before    => Exec["mount_${mountDirectory}"]
   }
 
   exec { "mount_${mountDirectory}":
-    command =>  "mount -t glusterfs ${::hostname}:${volumeName} ${mountDirectory}",
-    unless  => "mount | grep ${volumeName}",
-    path    => [ '/usr/sbin', '/usr/bin', '/sbin', '/bin' ],
+    command   =>  "mount -t glusterfs ${::hostname}:${volumeName} ${mountDirectory}",
+    logoutput => true,
+    unless    => "mount | grep ${volumeName}",
+    path      => [ '/usr/sbin', '/usr/bin', '/sbin', '/bin' ],
   }
 
 

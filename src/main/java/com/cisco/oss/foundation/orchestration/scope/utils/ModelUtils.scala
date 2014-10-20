@@ -114,7 +114,7 @@ object ModelUtils extends Slf4jLogger {
           hosts = hosts + (nodeName -> InstallationPart(Some(PuppetRole(puppetPrefix.replace("\r", ""),
             Map[String, String](
               ("bin_repo::url" -> (productRepoInfo.productYumRepoUrl)),
-              ("bin_repo::components::url" -> (productRepoInfo.productYumRepoUrl))),
+              ("bin_repo::name" -> (productRepoInfo.repoName))),
             List[String]())), None)
             )
         }

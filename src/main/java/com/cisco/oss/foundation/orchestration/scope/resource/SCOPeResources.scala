@@ -49,8 +49,9 @@ class SystemsResources extends Slf4jLogger with BasicResource {
     ScopeUtils.time(logger, "getAllSystems-rest") {
       logInfo("returning all systems")
       val systems = scopedb.findAllSystems
-      systems.map((system) => {
-        system.copy(password = "****")
+      systems map (
+        system => {
+          system.copy(password = "****")
       })
     }
 
@@ -295,16 +296,17 @@ class ProductsResource extends Slf4jLogger with BasicResource {
 
       scopedb.saveProductPatch(s"${productName}-${productVersion}", updateInstanceData)
 
+      val repoUrl: String = updateInstanceData.updateUrl.getOrElse(product.repoUrl)
       val (deploymentModel, resources) = ModelUtils.processDeploymentModel(DeploymentModelCapture("1.0",
         None,
         InstallNodes(ScopeUtils.ScopeNodeMetadataList2NodeList(instance.machineIds.values)),
         false,
         false,
         updateInstanceData.installModules,
-        ExposeAccessPoints(instance.accessPoints)), new ProductRepoInfo(updateInstanceData.updateUrl.getOrElse(product.repoUrl)), puppetScriptName)
+        ExposeAccessPoints(instance.accessPoints)), new ProductRepoInfo(repoUrl, updateInstanceData.patchName), puppetScriptName)
 
       loadResources(resources)
-      DeploymentUtils.deployModules(deploymentModel, updateInstanceData.installModules, instance.machineIds.values.toList, product, system, instance)
+      deploymentUtils.deployModules(deploymentModel, updateInstanceData.installModules, instance.machineIds.values.toList, repoUrl, product, system, instance)
       instance
     }
 

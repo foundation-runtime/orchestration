@@ -29,7 +29,7 @@ object ScopeProvisionModel {
 
 class RoleInfo(val roleName: String, val envName: String, val puppetRoleScript: String, val hieraRole: String)
 
-class ProductRepoInfo(productUrl: String) {
+case class ProductRepoInfo(productUrl: String, repoName: String = "base") {
   val productPuppetRepoUrl = s"${productUrl}prodpuppet/"
   val productYumRepoUrl = s"${productUrl}yum/"
   val productMaterializerUrl = s"${productUrl}materializer/"

@@ -49,6 +49,8 @@ trait BasicResource extends Slf4jLogger {
 
   @Autowired var scopedb: SCOPeDB = _
 
+  @Autowired var deploymentUtils: DeploymentUtils = _
+
   @Autowired val vmUtils: VMUtils = null
 
   @Resource(name = "componentInstallationImpl") val componentInstallation: IComponentInstallation = null
@@ -465,27 +467,30 @@ trait BasicResource extends Slf4jLogger {
 
             val stepFutureList = currentHosts map {
               case hostDetails => {
+                val vmDetails = if (hostDetails.privateAddresses.size == 0) {
+                  vmUtils.findVM(hostDetails.id).get
+                } else {
+                  hostDetails
+                }
 
-
-
-                logInfo(s"Start deploy VM : { id: ${hostDetails.id}, name: ${hostDetails.hostname}, IP: ${hostDetails.privateAddresses.head} }")
-                val puppetRole = hostsMap.get(hostDetails.hostname)
+                logInfo(s"Start deploy VM : { id: ${vmDetails.id}, name: ${vmDetails.hostname}, IP: ${vmDetails.privateAddresses.head} }")
+                val puppetRole = hostsMap.get(vmDetails.hostname)
                 val modulesName = extractModulesName(puppetRole)
-                updateMachineStatus(instance, hostDetails.hostname, s"Start $step", None, Some(modulesName))
+                updateMachineStatus(instance, vmDetails.hostname, s"Start $step", None, Some(modulesName))
                 puppetRole match {
                   case Some(role) => {
                     val puppetApplyFuture = future {
                       Thread.sleep(1000)
                       try {
-                        vmUtils.deployVM(hostDetails.copy(privateKey = Some(privateKey)), puppetScriptName, instance.product.repoUrl, instance.product.productName, instance.product.productVersion, role)
+                        vmUtils.deployVM(vmDetails.copy(privateKey = Some(privateKey)), puppetScriptName, instance.product.repoUrl, instance.product.productName, instance.product.productVersion, role)
                       } catch {
                         case e: Exception => {
-                          logError(s"Failed to deploy VM ${hostDetails.hostname}, error: ${e.toString}", e)
+                          logError(s"Failed to deploy VM ${vmDetails.hostname}, error: ${e.toString}", e)
                           throw e
                         }
                       }
 
-                      Some(hostDetails)
+                      Some(vmDetails)
                     }
 
                     puppetApplyFuture onSuccess {
