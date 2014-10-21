@@ -61,4 +61,4 @@ Such an API will allow us to define the MongoDB product at a high level of â€˜2â
 which software will then translate into calls to the cloud API to create virtual machine instances. 
 Without cloud, we could not effectively support Product level variance.
 
-<img src=
+<img src=https://github.com/foundation-runtime/orchestration/blob/master/images/Product_Deployment_Flowchart.png>
