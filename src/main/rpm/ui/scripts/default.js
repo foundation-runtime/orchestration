@@ -1,5 +1,5 @@
-var baseUrl = "http://10.45.37.127:6401/";
-var systemCookie = "izek" // localStorage.systemCookie;
+var baseUrl = "http://<scope_ip>:6401/";
+var systemCookie = localStorage.systemCookie;
 
 $(document).ajaxStart(function() {
     //showMessage( "Loading..." );

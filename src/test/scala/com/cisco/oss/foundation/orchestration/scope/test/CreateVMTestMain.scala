@@ -16,18 +16,14 @@
 
 package com.cisco.oss.foundation.orchestration.scope.test
 
-import com.cisco.oss.foundation.orchestration.scope.main.{ RunScope => RunScopeMain }
+import com.cisco.oss.foundation.http.{HttpMethod, HttpRequest, HttpResponse}
+import com.cisco.oss.foundation.orchestration.scope.main.{RunScope => RunScopeMain}
+import com.cisco.oss.foundation.orchestration.scope.model.{AccessPoint, Instance, Product, _}
+import com.cisco.oss.foundation.orchestration.scope.utils.{ScopeUtils, Slf4jLogger}
+import com.mongodb.{Mongo, MongoClient}
 import net.liftweb.json._
-import com.cisco.oss.foundation.orchestration.scope.utils.ScopeUtils
-import com.cisco.oss.foundation.orchestration.scope.utils.Slf4jLogger
-import com.cisco.oss.foundation.orchestration.scope.model._
+
 import scala.concurrent.duration._
-import com.mongodb.{MongoClient, Mongo}
-import com.cisco.oss.foundation.orchestration.scope.model.AccessPoint
-import com.cisco.oss.foundation.orchestration.scope.model.Product
-import com.cisco.oss.foundation.orchestration.scope.model.Instance
-import scala.Some
-import com.cisco.oss.foundation.http.{HttpResponse, HttpMethod, HttpRequest}
 
 object Main extends App with Slf4jLogger{
 
@@ -78,7 +74,7 @@ object Main extends App with Slf4jLogger{
                                       )
               //Product(@(Id@field)val id:String, val productName: String, val productVersion: String, val productOptions: Option[Array[ProductOption]], val accessPoints:Option[Collection[AccessPoint]], val foundationMachine:FoundationMachine)
   //var product = Product("", "IdentityManagement", "1.23.4.8", None, Some(accessPoints), FoundationMachine(Some(HostDetails("","3ae40aaf-2bb8-4124-80b6-618063c60835","10.234.0.47")),""))
-  var product = Product("", "IM", "3.48.0.0", List[ProductOption](), "http://10.45.37.14/scope-products/test-1.0.0.0/")
+  var product = Product("", "IM", "3.48.0.0", List[ProductOption](), "http://10.45.37.14/scope-products/test-1.0.0.0/", None)
   println ("product is: " + ScopeUtils.mapper.writeValueAsString(product))
 
 

@@ -17,8 +17,10 @@
 package com.cisco.oss.foundation.orchestration.scope.utils
 
 import java.net.URL
+import java.util.Collections
 import java.util.concurrent.TimeUnit
 
+import com.cisco.oss.foundation.orchestration.scope.model.{Node, ScopeNodeMetadata}
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import org.apache.commons.configuration.PropertiesConfiguration
@@ -122,6 +124,10 @@ object ScopeUtils {
   def unionMap[K, V](m1: Map[K, V], m2: Map[K, V]): Map[K, V] = {
     val tuples: List[(K, V)] = m2.toList ++ m1.toList
     tuples.toMap
+  }
+
+  def ScopeNodeMetadataList2NodeList(input: Iterable[ScopeNodeMetadata]) = {
+    input.map(m => Node(m.id, m.hostname, "", "", "", "", 0, 0, 0, Collections.emptyList(), false, None, None, None, None, true, None, None)).toList
   }
 
 }

@@ -1,5 +1,4 @@
 function showInstanceModules() {
-}
 var n = window.location.href.lastIndexOf("=");
 var instanceId = window.location.href.substring(n + 1);
 $.ajax({
@@ -26,5 +25,5 @@ $.ajax({
 }).fail(function (data) {
     console.error("Error retrieving instance details");
 });
-
+}
 

@@ -17,13 +17,12 @@
 package com.cisco.oss.foundation.orchestration.scope.utils
 
 import com.google.common.collect.ImmutableSet
-import org.jclouds.concurrent.config.ExecutorServiceModule
-import com.google.common.util.concurrent.MoreExecutors._
-import org.jclouds.sshj.config.SshjSshClientModule
+import com.google.common.util.concurrent.MoreExecutors
 import org.jclouds.ContextBuilder
-import org.jclouds.openstack.nova.v2_0.extensions.{VolumeAttachmentApi, VolumeApi}
-import org.jclouds.openstack.nova.v2_0.options.CreateVolumeOptions
+import org.jclouds.concurrent.config.ExecutorServiceModule
 import org.jclouds.openstack.nova.v2_0.NovaApi
+import org.jclouds.openstack.nova.v2_0.options.CreateVolumeOptions
+import org.jclouds.sshj.config.SshjSshClientModule
 
 /**
  * Created with IntelliJ IDEA.
@@ -47,7 +46,7 @@ object StorageUtilsFactory {
 
 
 trait StorageUtils {
-  protected val modules = ImmutableSet.of(new ExecutorServiceModule(sameThreadExecutor(), sameThreadExecutor()), new SshjSshClientModule());
+  protected val modules = ImmutableSet.of(new ExecutorServiceModule( MoreExecutors.newDirectExecutorService()), new SshjSshClientModule());
   protected val cloudProvider = ScopeUtils.configuration.getString("cloud.provider")
   protected val storageProviderName = ScopeUtils.configuration.getString(s"cloud.provider.$cloudProvider.storage")
 
@@ -76,7 +75,7 @@ object OpenStackStorageUtils extends StorageUtils {
   private val novaApi = context.buildApi(classOf[NovaApi])
 
   def createStorage(size: Int, name: String) = {
-    val volumeApi = novaApi.getVolumeExtensionForZone(location).get()
+    val volumeApi = novaApi.getVolumeApi(location).get()
     val createVolumeOptions: CreateVolumeOptions = CreateVolumeOptions.Builder.availabilityZone(location)
                                                                                .volumeType("lvm")
                                                                                .name(name)
@@ -85,17 +84,17 @@ object OpenStackStorageUtils extends StorageUtils {
   }
 
   def deleteStorage(id: String) = {
-    val volumeApi = novaApi.getVolumeExtensionForZone(location).get()
+    val volumeApi = novaApi.getVolumeApi(location).get()
     volumeApi.delete(id)
   }
 
   def attachStorage(volumeId: String, serverId: String, device: String) = {
-    val volumeAttachmentApi = novaApi.getVolumeAttachmentExtensionForZone(location).get()
+    val volumeAttachmentApi = novaApi.getVolumeAttachmentApi(location).get()
     volumeAttachmentApi.attachVolumeToServerAsDevice(volumeId, serverId, device)
   }
 
   def detachVolumeFromServer(volumeId: String, serverId: String) = {
-    val volumeAttachmentApi = novaApi.getVolumeAttachmentExtensionForZone(location).get()
+    val volumeAttachmentApi = novaApi.getVolumeAttachmentApi(location).get()
     volumeAttachmentApi.detachVolumeFromServer(volumeId, serverId)
   }
 }
