@@ -167,7 +167,8 @@ object SCOPeDBMongoImplTest {
                                     "",
                                     "",
                                     List(),
-                                    ""),
+                                    "",
+                                    None),
                             Map("izek-www-upm0" -> ScopeNodeMetadata("",
                                                                      "",
                                                                      None,
@@ -179,8 +180,7 @@ object SCOPeDBMongoImplTest {
                                                                      "",
                                                                      "STARTING")),
                             List(),
-                            Some(true),
-                            Map[String, String]())
+                            Some(true))
 
 
     instances.insert(grater[Instance].asDBObject(instance))
@@ -204,7 +204,7 @@ class SCOPeDBMongoImplTest {
 
     println(instance)
 
-    db.updateMachineStatus(instance.get.systemId, "52e76356e4b0ad9aa68837fe", "izek-www-upm0", "STARTED")
+    db.updateMachineStatus("52e76356e4b0ad9aa68837fe", "izek-www-upm0", "STARTED", Some(scala.collection.mutable.Set[String]("test_module")))
 
     val instance1 = db.findInstance("52e76356e4b0ad9aa68837fe")
 

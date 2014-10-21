@@ -16,15 +16,17 @@
 
 package com.cisco.oss.foundation.orchestration.scope.model
 
-import org.springframework.data.annotation.Id
-import scala.annotation.meta.field
 import java.util.Collection
-import scala.collection.immutable.Map
-import com.novus.salat.annotations._
-import com.fasterxml.jackson.module.scala.JsonScalaEnumeration
-import com.fasterxml.jackson.core.`type`.TypeReference
-import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
+
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type
+import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
+import com.fasterxml.jackson.core.`type`.TypeReference
+import com.fasterxml.jackson.module.scala.JsonScalaEnumeration
+import com.novus.salat.annotations._
+import org.springframework.data.annotation.Id
+
+import scala.annotation.meta.field
+import scala.collection.immutable.Map
 
 
 object OptionType extends Enumeration {
@@ -55,7 +57,7 @@ case class Parameter(name: String, value: String, @JsonScalaEnumeration(classOf[
 
 //case class ParameterValue(name:String, value:String)
 
-case class Product( @Key("_id") @(Id@field)id:String, productName: String, productVersion: String, productOptions: List[ProductOption], repoUrl: String)
+case class Product(@Key("_id") @(Id@field) id: String, productName: String, productVersion: String, productOptions: List[ProductOption], repoUrl: String, patches: Option[Map[String, UpdateInstanceData]] = None)
 
 case class Service(@Key("_id") @(Id@field) id: String, productName: String, productVersion: String)
 
@@ -80,13 +82,13 @@ case class Node(id: String,
                 minCores: Int,
                 network: Collection[Network],
                 swapFile: Boolean,
-                image : Option[String],
+                image: Option[String],
                 bakedImage: Option[Boolean],
                 flpImage: Option[String],
                 iso: Option[String],
                 postConfiguration: Boolean = true,
                 folder: Option[String],
-                existingInstance: Option[ExistingInstanceDetails]= None)
+                existingInstance: Option[ExistingInstanceDetails] = None)
 
 case class Network(nicType: String, networkId: Option[String], nicAlias: String, dnsServices: Option[List[String]], openPorts: Option[List[String]])
 
@@ -98,18 +100,20 @@ case class InstallModules(modules: Collection[Module])
   property = "moduleType",
   defaultImpl = classOf[PuppetModule]
 )
-@JsonSubTypes( Array (
+@JsonSubTypes(Array(
   new Type(value = classOf[PuppetModule], name = "puppet"),
   new Type(value = classOf[PluginModule], name = "plugin")
 ))
-trait Module{
+trait Module {
   val moduleType: String = if (this.isInstanceOf[PuppetModule]) "puppet" else "plugin"
   val nodes: List[String] = List[String]()
 }
-case class PuppetModule(name: String, version: String = "0.0.0",  configurationServer: Option[ConfigurationSection], file: Option[ConfigurationFile], deployFile: Option[DeployFile]) extends Module
+
+case class PuppetModule(name: String, version: String = "0.0.0", configurationServer: Option[ConfigurationSection], file: Option[ConfigurationFile], deployFile: Option[DeployFile]) extends Module
+
 case class PluginModule(className: String, configuration: String) extends Module
 
-case class DeployFile(content: String, destinationPath: String, owner: String, group: String, mode:String)
+case class DeployFile(content: String, destinationPath: String, owner: String, group: String, mode: String)
 
 case class ConfigurationSection(processName: String, baseConfigProperties: Collection[String], additionalValues: Collection[KeyValueConfig])
 
@@ -140,7 +144,9 @@ case class ControlStatus(status: String, description: String)
 case class ControlStatusRequest(status: String)
 
 case class InstallationPart(var puppet: Option[PuppetRole], var plugin: Option[PluginRole])
-case class PuppetRole(var script: String, var configuration: Map[String, String], var hostname: List[String])
+
+case class PuppetRole(var script: String, var configuration: Map[String, String], var hostname: List[String], modulesName: scala.collection.mutable.Set[String] = scala.collection.mutable.Set())
+
 case class PluginRole(val className: String, val configuration: String)
 
 object ConfigurationEnum extends Enumeration {
@@ -155,11 +161,16 @@ case class ScopeNodeMetadata(val id: String, val hostname: String, fqdn: Option[
                              val url: String,
                              provisionStatus: String,
                              sshUser: String = "root",
-                             existMachine: Boolean = false)
+                             existingMachine: Boolean = false,
+                             installedModules: List[String] = List())
 
 case class PreDeleteSection(val nodes: List[String],
-                         val script: String)
+                            val script: String)
 
 case class PreDeleteNodes(val sections: List[PreDeleteSection])
 
-case class ExistingInstanceDetails(ip: String, user:String, password: String)
+case class ExistingInstanceDetails(ip: String, user: String, password: String)
+
+case class UpdateInstanceData(@Key("_id") @(Id@field) patchName: String, updateUrl: Option[String], installModules: Map[String, InstallModules])
+
+case class PatchDBObject(_id: String, productId: String, data: String)

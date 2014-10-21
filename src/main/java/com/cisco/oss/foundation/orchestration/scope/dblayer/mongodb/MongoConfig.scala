@@ -34,7 +34,7 @@ class MongoConfig extends AbstractMongoConfiguration {
     val host = ScopeUtils.configuration.getString("mongodb.host", "localhost")
     val port = ScopeUtils.configuration.getInt("mongodb.port", 27017)
     val address = new ServerAddress(host, port)
-    val mongoOptions = MongoClientOptions.builder().writeConcern(WriteConcern.FSYNC_SAFE).build()
+    val mongoOptions = new MongoClientOptions.Builder().writeConcern(WriteConcern.FSYNC_SAFE).build()
     new MongoClient(address, mongoOptions)
   }
 

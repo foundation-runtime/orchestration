@@ -29,9 +29,6 @@ import scala.io.Source
 /**
  * Created with IntelliJ IDEA.
  * User: igreenfi
- * Date: 2/6/14
- * Time: 9:01 AM
- * To change this template use File | Settings | File Templates.
  */
 class BootstrapStatements(val networkAddress: List[(SubnetUtils, String)], val baseRepoUrl: String, val osVersion: String, val hasPublicIp: Boolean, val nodeName : String, val openPorts: List[String] = List(), provider: String) extends ScopeStatement {
 
@@ -99,6 +96,8 @@ class BootstrapStatements(val networkAddress: List[(SubnetUtils, String)], val b
 
     statements.add(exec("rm -f /etc/localtime"))
     statements.add(exec("ln -s /usr/share/zoneinfo/UTC /etc/localtime"))
+    statements.add(exec("mkdir -p ~/.ssh"))
+    statements.add(exec("restorecon -FRvv ~/.ssh"))
 
     statements.add(exec("sed -e s#debuglevel.*#debuglevel=10# -i.bak /etc/yum.conf"))
     statements.add(exec("echo 'errorlevel=10' >> /etc/yum.conf"))

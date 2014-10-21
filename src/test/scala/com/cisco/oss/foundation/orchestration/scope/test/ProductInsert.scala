@@ -16,19 +16,14 @@
 
 package com.cisco.oss.foundation.orchestration.scope.test
 
-import org.springframework.context.support.ClassPathXmlApplicationContext
-import com.cisco.oss.foundation.orchestration.scope.model._
-import net.liftweb.json.NoTypeHints
-import net.liftweb.json.Serialization
-import net.liftweb.json.Serialization.write
+import com.cisco.oss.foundation.orchestration.scope.model.{AccessPoint, Product, ProductOption, _}
+import com.cisco.oss.foundation.orchestration.scope.utils.ScopeUtils
 import com.mongodb.casbah.Imports._
 import com.novus.salat._
 import com.novus.salat.global._
-import com.cisco.oss.foundation.orchestration.scope.model.AccessPoint
-import com.cisco.oss.foundation.orchestration.scope.model.Product
-import scala.Some
-import com.cisco.oss.foundation.orchestration.scope.model.ProductOption
-import com.cisco.oss.foundation.orchestration.scope.utils.ScopeUtils
+import net.liftweb.json.{NoTypeHints, Serialization}
+import net.liftweb.json.Serialization.write
+import org.springframework.context.support.ClassPathXmlApplicationContext
 
 
 object ProductInsert extends App {
@@ -63,7 +58,8 @@ object ProductInsert extends App {
       ProductOption("sampleKey2", None, "int sample key", None, OptionType.NUMBER, "123", None, false, additionalInfo),
       ProductOption("sampleKey3", None, "boolean sample key", None, OptionType.BOOLEAN, "true", None, false, additionalInfo),
       ProductOption("sampleKey4", None, "file sample key", None, OptionType.FILE, "", None, false, additionalInfo)),
-    productRepoUrl
+    productRepoUrl,
+  None
   )
   
   println(ScopeUtils.mapper.writeValueAsString(product))
@@ -86,7 +82,8 @@ object ProductInsert extends App {
       ProductOption("sampleKey2", None, "int sample key", None, OptionType.NUMBER, "123", None, false),
       ProductOption("sampleKey3", None, "boolean sample key", None, OptionType.BOOLEAN, "true", None, false),
       ProductOption("sampleKey4", None, "file sample key", None, OptionType.FILE, "", None, false)),
-    productRepoUrl
+    productRepoUrl,
+  None
   )
 
       println(write(product))
