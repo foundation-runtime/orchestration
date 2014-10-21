@@ -103,3 +103,28 @@ The ‘Transformation Logic’ block knows how to build a ‘deployment model ca
 <li>Module to guest mapping:  which modules to install on which guests</li>
 <li>Configuration bootstrap: any additional component configuration required by components in order to operate properly. This additional configuration would be referred to in terms of CCP namespace and configuration-parameter-names. Example of such configuration could be: user-names, service ports, etc. As a rule any CCP required configuration not provided as a default value, would need to be covered in the configuration bootstrap section.</li>
 </ol>
+
+<h2>Provisioning Solution (3)</h2>
+The role of the Provisioning solution (“SCOPE”) is threefold:
+<ol>
+<li>Given a Product type, provide a web interface that exposes the product variance.</li>
+<li>Translate the values chosen for product variance into a ‘Deployment Model Capture’ by invoking the ‘Product Transformation Logic’.</li>
+<li>Provision the deployment using a cloud API to reflect the ‘Deployment Model Capture’.</li>
+</ol>
+
+<h2>Cloud Deployment (4)</h2>
+A provisioned product will inhabit dedicated virtual machines on supported cloud infrastructure. 
+There are two parts to the provisioned product:
+<ol>
+<li>Product’s local provisioning and operational ecosystem. This includes Puppet and YUM repositories as well as configuration Infrastructure.</li>
+<li>The Product’s core components and third party dependencies, deployed across the Product’s dedicated virtual machines.</li>
+</ol>
+<h2>Puppet Repository (4a)</h2>
+The idea is that SCOPE will dynamically create a Puppet repository based on the Puppet modules associated with the components contained within the Product.
+<h2>YUM Repository (4b)</h2>
+The YUM repository is really an implementation detail. The point is that SCOPE will dynamically create a YUM repository, placing all its component RPMs there.
+<h2>Configuration Infrastructure (4c)</h2>
+The configuration infrastructure is central to the provisioning activity. The configuration bootstrap data will be placed there by SCOPE.
+This SCOPE-to-CCP-integration allows us to use the same configuration solution for the system installation and system operation use cases. 
+This is of crucial importance; without it we’d have to manage two separate configuration silos – one for Puppet when installing components; 
+the other for the components’ runtime configuration needs, using configuration infrastructure.
