@@ -61,4 +61,11 @@ Such an API will allow us to define the MongoDB product at a high level of â€˜2â
 which software will then translate into calls to the cloud API to create virtual machine instances. 
 Without cloud, we could not effectively support Product level variance.
 
-<img src=
+Building Products for Cloud
+============
+For our organization to be able to build Products that capitalize on cloud technology and paradigm, 
+we need to define technology and supporting process by which components being developed by different teams can be assembled into Products. 
+The following diagram provides a very high level capture of the objects and processes that are integral to Product Building. 
+It contains references to new architectural blocks that will be explained in the sections to follow it.
+
+<img src=https://github.com/foundation-runtime/orchestration/blob/master/images/Product_Deployment_Flowchart.png>
