@@ -16,27 +16,23 @@
 
 package com.cisco.oss.foundation.orchestration.scope.utils
 
-import org.jclouds.ContextBuilder
-import org.jclouds.rackspace.clouddns.v1.CloudDNSApi
-import com.google.common.collect.{Lists, ImmutableSet}
-import org.jclouds.concurrent.config.ExecutorServiceModule
+import com.google.common.collect.{ImmutableSet, Lists}
 import com.google.common.util.concurrent.MoreExecutors._
-import org.jclouds.sshj.config.SshjSshClientModule
-import org.jclouds.route53.Route53Api
-import org.jclouds.rackspace.clouddns.v1.domain.{Record, CreateDomain}
+import org.jclouds.ContextBuilder
+import org.jclouds.concurrent.config.ExecutorServiceModule
+import org.jclouds.rackspace.clouddns.v1.CloudDNSApi
+import org.jclouds.rackspace.clouddns.v1.domain.{CreateDomain, Record}
 import org.jclouds.rackspace.clouddns.v1.predicates.JobPredicates._
-import scala.collection.JavaConversions._
+import org.jclouds.route53.Route53Api
 import org.jclouds.route53.domain.ResourceRecordSet
-import org.jclouds.route53.domain.ResourceRecordSet._
-import com.google.common.collect.ImmutableList
+import org.jclouds.sshj.config.SshjSshClientModule
+
+import scala.collection.JavaConversions._
 import scala.concurrent.{ExecutionContext, future}
 
 /**
  * Created with IntelliJ IDEA.
  * User: igreenfi
- * Date: 1/27/14
- * Time: 1:05 PM
- * To change this template use File | Settings | File Templates.
  */
 object DnsUtilsFactory {
 

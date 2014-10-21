@@ -31,7 +31,7 @@ object ScopeConstants {
   val BENTO_SYSTEM_ID = "service.scope.bento.system.id"
 
   val SCOPE_RESOURCES_FOLDER = "scope/resources/"
-
+  val CLOUD_PROVIDER = "cloud.provider"
   val CLOUD_ENV_HAS_DNS = "cloud.env.hasDns"
   val FOUNDATION_ENABLED = "foundation.enabled"
   val FOUNDATION_NAME = "foundation.name"
@@ -39,6 +39,7 @@ object ScopeConstants {
 
   val FAILED = "FAILED"
   val STARTED = "STARTED"
+  val STARTING = "STARTING"
 }
 
 object ScopeErrorMessages {

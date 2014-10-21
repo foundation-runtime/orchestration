@@ -304,10 +304,10 @@ class VMUtils extends Slf4jLogger {
 
         val nodeStatus = node.bakedImage match {
           case Some(true) => {
-            "STARTED"
+            ScopeConstants.STARTED
           }
           case Some(false) | None => {
-            "STARTING"
+            ScopeConstants.STARTING
           }
         }
 
@@ -471,7 +471,7 @@ class VMUtils extends Slf4jLogger {
   }
 
   def getGroupFromNodeMetadata(nodeMetaData : NodeMetadata) : String = {
-    ScopeUtils.configuration.getString("cloud.provider") match {
+    ScopeUtils.configuration.getString(ScopeConstants.CLOUD_PROVIDER) match {
     	case "aws" => nodeMetaData.getUserMetadata().get("group")
     	case _ => nodeMetaData.getGroup
     }

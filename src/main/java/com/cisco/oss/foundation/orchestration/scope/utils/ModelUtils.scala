@@ -114,7 +114,7 @@ object ModelUtils extends Slf4jLogger {
           hosts = hosts + (nodeName -> InstallationPart(Some(PuppetRole(puppetPrefix.replace("\r", ""),
             Map[String, String](
               ("bin_repo::url" -> (productRepoInfo.productYumRepoUrl)),
-              ("bin_repo::components::url" -> (productRepoInfo.productYumRepoUrl))),
+              ("bin_repo::name" -> (productRepoInfo.repoName))),
             List[String]())), None)
             )
         }
@@ -146,11 +146,13 @@ object ModelUtils extends Slf4jLogger {
                         """.stripMargin
                         }
                         case None => {
-                          role.puppet.get.script += "include " + module.asInstanceOf[PuppetModule].name + "\n"
-                          role.puppet.get.configuration += (module.asInstanceOf[PuppetModule].name + "::version" -> module.asInstanceOf[PuppetModule].version)
+                          val puppetModuleName: String = module.asInstanceOf[PuppetModule].name
+                          role.puppet.get.modulesName += puppetModuleName
+                          role.puppet.get.script += s"include $puppetModuleName\n"
+                          role.puppet.get.configuration += (s"$puppetModuleName::version" -> module.asInstanceOf[PuppetModule].version)
                           module.asInstanceOf[PuppetModule].file match {
-                            case Some(ccp) => {
-                              ccp.additionalValues.foreach(parameter => {
+                            case Some(configurationServerSection) => {
+                              configurationServerSection.additionalValues.foreach(parameter => {
                                 role.puppet.get.configuration += (parameter.key -> parameter.value)
                               })
                             }
