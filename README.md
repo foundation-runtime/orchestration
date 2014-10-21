@@ -69,3 +69,37 @@ The following diagram provides a very high level capture of the objects and proc
 It contains references to new architectural blocks that will be explained in the sections to follow it.
 
 <img src=https://github.com/foundation-runtime/orchestration/blob/master/images/Product_Deployment_Flowchart.png>
+
+Architectural Building Blocks
+============
+<h2>Component Package (1)</h2>
+As depicted in the illustration, a component package contains three parts:
+<h2>Core Component (1a)</h2>
+Core components represent the units of RPM software. A component maintains its own version tree, and may be part of more than one Products. 
+<h2>CCPConfig.xml (1b)</h2>
+Each Core component can contain a file that describing all the components configuration. 
+This is true for Cisco components as well as for third party components, for which we’ll can use the configuration server artifacts. 
+<h2>Puppet Modules (1c)</h2>
+Each Core component will have a matching Puppet Module artifact, versioned in unison with it.  
+<h2>Product (2)</h2> 
+A Product is the sum total of the specific versions of each underlying component deliverable and Puppet Scripts. 
+It includes some core secret ingredients that make it viable, here’s the breakdown of the main pieces:
+<h2>Product Archive (2a)</h2>
+Contains physical copies of the underlying RPMs, configuration file documents and Puppet Modules.
+<h2>Product Variance Definition (2b)</h2>
+This artifact contains a declarative description of all the exposed product level variance. 
+<h2>Product Transformation Logic (2c)</h2>
+The ‘Transformation Logic’ concept is of singular importance, and represents one of the key concepts of the Platform’s provisioning paradigm: 
+The way in which high level configuration is translated into a deployment model and component configuration set, 
+must be defined by the product itself. This ‘Transformation Logic’ is expressed as a software code, 
+which receives as input the set of Product level configuration parameter choices, 
+and produces as output a ‘deployment model capture’ document that describes the system in low level detail.
+<h3>Deployment Model Capture</h3>
+
+The ‘Transformation Logic’ block knows how to build a ‘deployment model capture’ based on high level parameter choices. What exactly is a ‘deployment model capture’?
+‘Deployment Model Capture’ will be a document artifact in a predefined format that will describe system installation in terms of the following aspects:
+<ol>
+<li>Required physical resources (virtual machines, network, etc). For example: guests will be described in terms of their cpu, memory and disk needs.</li>
+<li>Module to guest mapping:  which modules to install on which guests</li>
+<li>Configuration bootstrap: any additional component configuration required by components in order to operate properly. This additional configuration would be referred to in terms of CCP namespace and configuration-parameter-names. Example of such configuration could be: user-names, service ports, etc. As a rule any CCP required configuration not provided as a default value, would need to be covered in the configuration bootstrap section.</li>
+</ol>
