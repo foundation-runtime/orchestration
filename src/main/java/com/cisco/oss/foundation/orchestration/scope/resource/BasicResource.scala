@@ -49,6 +49,8 @@ trait BasicResource extends Slf4jLogger {
 
   @Autowired var scopedb: SCOPeDB = _
 
+  @Autowired var deploymentUtils: DeploymentUtils = _
+
   @Autowired val vmUtils: VMUtils = null
 
   @Resource(name = "componentInstallationImpl") val componentInstallation: IComponentInstallation = null
@@ -313,7 +315,7 @@ trait BasicResource extends Slf4jLogger {
                   } else {
                     vm.privateAddresses
                   }
-                  vm.copy(hostname = vm.hostname.toLowerCase(), privateAddresses = privateIps, sshUser = details.user, group = "exists_node", existMachine = true)
+                  vm.copy(hostname = vm.hostname.toLowerCase(), privateAddresses = privateIps, sshUser = details.user, group = "exists_node", existingMachine = true)
                 }
                 case None => throw new RuntimeException(s"Can NOT find VM with name ${node.name}");
               }
@@ -458,8 +460,9 @@ trait BasicResource extends Slf4jLogger {
                 }
 
                 logInfo(s"Start deploy VM : { id: ${vmDetails.id}, name: ${vmDetails.hostname}, IP: ${vmDetails.privateAddresses.head} }")
-                updateMachineStatus(instance, vmDetails.hostname, s"Start $step", None)
                 val puppetRole = hostsMap.get(vmDetails.hostname)
+                val modulesName = extractModulesName(puppetRole)
+                updateMachineStatus(instance, vmDetails.hostname, s"Start $step", None, Some(modulesName))
                 puppetRole match {
                   case Some(role) => {
                     val puppetApplyFuture = future {
@@ -478,7 +481,7 @@ trait BasicResource extends Slf4jLogger {
 
                     puppetApplyFuture onSuccess {
                       case Some(details) =>
-                        updateMachineStatus(instance, details.hostname, s"Finished $step", None)
+                        updateMachineStatus(instance, details.hostname, s"Finished $step", None, None)
                         logInfo(s"Finished deploy VM: id ${details.id}, name ${details.hostname}, IP ${details.privateAddresses.head}")
                     }
 
@@ -545,7 +548,7 @@ trait BasicResource extends Slf4jLogger {
           case status => {
             logError(s"stderr : ${execResponse.getError}")
             logError(s"stdout : ${execResponse.getOutput}")
-            scopedb.updateMachineStatus(systemId, instanceId, vmUtils.getNameFromNodeMetadata(node), ScopeConstants.FAILED)
+            scopedb.updateMachineStatus(systemId, instanceId, vmUtils.getNameFromNodeMetadata(node), ScopeConstants.FAILED, None)
             return false
           }
         }
@@ -555,8 +558,8 @@ trait BasicResource extends Slf4jLogger {
   }
 
 
-  private def updateMachineStatus(instance: Instance, machineName: String, status: String, detail: Option[String]) {
-    scopedb.updateMachineStatus(instance.systemId, instance.instanceId, machineName, status)
+  private def updateMachineStatus(instance: Instance, machineName: String, status: String, detail: Option[String], modulesName: Option[scala.collection.mutable.Set[String]]) {
+    scopedb.updateMachineStatus(instance.systemId, instance.instanceId, machineName, status, modulesName)
   }
 
   private def updateInstanceStatus(instance: Instance, status: String, detail: Option[String], ip: Option[String], hostname: Option[String]): Instance = {
@@ -718,7 +721,7 @@ trait BasicResource extends Slf4jLogger {
     machineIds.values match {
       case vals: Iterable[ScopeNodeMetadata] if vals.size > 0 => {
         vals.foreach((hostDetails) => {
-          if (!hostDetails.existMachine) {
+          if (!hostDetails.existingMachine) {
             logInfo("Deleting vm: {} id: {}", hostDetails.hostname, hostDetails.id)
             vmUtils.deleteVM(hostDetails)
           }
@@ -737,6 +740,20 @@ trait BasicResource extends Slf4jLogger {
           case None =>
         }
       }
+    }
+  }
+
+  def extractModulesName(roleOption: Option[InstallationPart]): scala.collection.mutable.Set[String] = {
+    roleOption match {
+      case Some(role) => {
+        role.puppet match {
+          case Some(puppet) => {
+            puppet.modulesName
+          }
+          case None => scala.collection.mutable.Set[String]()
+        }
+      }
+      case None => scala.collection.mutable.Set[String]()
     }
   }
 }

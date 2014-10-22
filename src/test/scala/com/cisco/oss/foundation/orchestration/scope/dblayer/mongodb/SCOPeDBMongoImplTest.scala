@@ -204,7 +204,7 @@ class SCOPeDBMongoImplTest {
 
     println(instance)
 
-    db.updateMachineStatus("52e76356e4b0ad9aa68837fe", "izek-www-upm0", "STARTED", Some(scala.collection.mutable.Set[String]("test_module")))
+    db.updateMachineStatus(instance.get.systemId, "52e76356e4b0ad9aa68837fe", "izek-www-upm0", "STARTED", Some(scala.collection.mutable.Set[String]("test_module")))
 
     val instance1 = db.findInstance("52e76356e4b0ad9aa68837fe")
 

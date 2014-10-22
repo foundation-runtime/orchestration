@@ -298,11 +298,11 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
     }
   }
 
-  def updateMachineStatus(instanceId: String, machineName: String, status: String, modulesName: Option[scala.collection.mutable.Set[String]]): Unit = {
+  def updateMachineStatus(systemId: String, instanceId: String, machineName: String, status: String, modulesName: Option[scala.collection.mutable.Set[String]]): Unit = {
     ScopeUtils.time(logger, "updateMachineStatus-db") {
       val q = MongoDBObject("_id" -> instanceId)
       val u = $set(s"machineIds.$machineName.provisionStatus" -> status)
-      val lock = lockMap.getOrElseUpdate(instanceId, Some(new ReentrantLock(true)))
+      val lock = lockMap.getOrElseUpdate(s"$systemId-$instanceId", Some(new ReentrantLock(true)))
       lock match {
         case Some(l) => l.lock()
         case None =>

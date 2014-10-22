@@ -67,7 +67,7 @@ class DeploymentUtils extends Slf4jLogger {
   }
 
   private def updateMachineStatus(instance: Instance, machineName: String, status: String, detail: Option[String], modulesName: Option[scala.collection.mutable.Set[String]]) {
-    scopedb.updateMachineStatus(instance.instanceId, machineName, status, modulesName)
+    scopedb.updateMachineStatus(instance.systemId, instance.instanceId, machineName, status, modulesName)
   }
 
   def deployModules(deploymentModel: HashMap[String, HashMap[String, InstallationPart]], stepsMap: Map[String, InstallModules],vmDetails:List[ScopeNodeMetadata], repoUrl: String, product: Product, system: System, instance: Instance) = {
