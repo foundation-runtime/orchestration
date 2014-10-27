@@ -158,7 +158,7 @@ trait BasicResource extends Slf4jLogger {
               foundationProductFuture onFailure {
                 case throwable => {
                   logError("Failed creating ScopeFoundation product for system : {}", systemId)
-                  instance = updateInstanceStatus(newInstance, ScopeConstants.FAILED, Some(s"Error whike creating ScopeFoundation instance for system ${systemId}: ${throwable.getMessage}"), None, None)
+                  instance = updateInstanceStatus(newInstance, ScopeConstants.FAILED, Some(s"Error while creating ScopeFoundation instance for system ${systemId}: ${throwable.getMessage}"), None, None)
                   logError(throwable.getMessage, throwable)
                 }
               }
@@ -668,7 +668,7 @@ trait BasicResource extends Slf4jLogger {
 
   def deleteInstanceVMs(machineIds: Map[String, ScopeNodeMetadata], instance: Option[Instance] = None) = {
     try {
-      val scriptsMap: Map[ScriptBuilder, List[String]] = Map()
+      var scriptsMap: Map[ScriptBuilder, List[String]] = Map[ScriptBuilder, List[String]]()
       instance match {
         case Some(ins) => {
           ins.preDeleteNodesScript match {
@@ -688,7 +688,7 @@ trait BasicResource extends Slf4jLogger {
                             case Some(n) => vmUtils.runScriptOnNode(builder.render(OsFamily.UNIX), "preDelete", n, privateKey, true)
                             case None => {
                               val hosts: List[String] = scriptsMap.getOrElse(builder, List())
-                              scriptsMap.put(builder, name :: hosts)
+                              scriptsMap = scriptsMap + (builder -> (name :: hosts))
                             }
                           }
                         } catch {

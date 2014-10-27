@@ -17,7 +17,7 @@
 package com.cisco.oss.foundation.orchestration.scope.utils
 
 import com.google.common.collect.ImmutableSet
-import com.google.common.util.concurrent.MoreExecutors
+import com.google.common.util.concurrent.MoreExecutors._
 import org.jclouds.ContextBuilder
 import org.jclouds.concurrent.config.ExecutorServiceModule
 import org.jclouds.openstack.nova.v2_0.NovaApi
@@ -46,7 +46,7 @@ object StorageUtilsFactory {
 
 
 trait StorageUtils {
-  protected val modules = ImmutableSet.of(new ExecutorServiceModule( MoreExecutors.newDirectExecutorService()), new SshjSshClientModule());
+  protected val modules = ImmutableSet.of(new ExecutorServiceModule(sameThreadExecutor(), sameThreadExecutor()), new SshjSshClientModule());
   protected val cloudProvider = ScopeUtils.configuration.getString("cloud.provider")
   protected val storageProviderName = ScopeUtils.configuration.getString(s"cloud.provider.$cloudProvider.storage")
 

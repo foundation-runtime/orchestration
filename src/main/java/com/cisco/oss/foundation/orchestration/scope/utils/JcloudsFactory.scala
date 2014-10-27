@@ -161,6 +161,8 @@ object JcloudsFactory extends Slf4jLogger {
           case None =>
         }
 
+        options.asInstanceOf[VSphereTemplateOptions].datacenterName(location)
+
         ScopeUtils.configuration.getString(s"cloud.provider.$cloudProvider.switchType") match {
           case "distributed" => options.asInstanceOf[VSphereTemplateOptions].distributedVirtualSwitch(true)
           case "regular" => options.asInstanceOf[VSphereTemplateOptions].distributedVirtualSwitch(false)
