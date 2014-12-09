@@ -436,6 +436,9 @@ trait BasicResource extends Slf4jLogger {
 
         // Start deploy.
         val sortedDeploymentModel = SortedMap[String, HashMap[String, InstallationPart]](deploymentModel.toArray: _*)
+
+        scopedb.updateInstance(instance.copy(deploymentModel = Some(sortedDeploymentModel)))
+
         sortedDeploymentModel.foreach {
           case (step, hostsMap) => {
             logInfo(s"Start deploying ${step}.")
