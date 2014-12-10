@@ -26,7 +26,8 @@ import com.novus.salat.annotations._
 import org.springframework.data.annotation.Id
 
 import scala.annotation.meta.field
-import scala.collection.immutable.Map
+import scala.collection.SortedMap
+import scala.collection.immutable.{HashMap, Map}
 
 
 object OptionType extends Enumeration {
@@ -63,7 +64,7 @@ case class Service(@Key("_id") @(Id@field) id: String, productName: String, prod
 
 case class HostDetails(hostName: String, hostId: String, hostIp: String)
 
-case class Instance(@Key("_id") @(Id@field) instanceId: String, systemId: String, instanceName: String, status: Option[String], details: Option[String], product: Product, machineIds: Map[String, ScopeNodeMetadata], accessPoints: List[AccessPoint], deletable: Option[Boolean], rsaKeyPair: Map[String, String] = Map[String, String](), preDeleteNodesScript: Option[PreDeleteNodes] = None)
+case class Instance(@Key("_id") @(Id@field) instanceId: String, systemId: String, instanceName: String, status: Option[String], details: Option[String], product: Product, machineIds: Map[String, ScopeNodeMetadata], accessPoints: List[AccessPoint], deletable: Option[Boolean], rsaKeyPair: Map[String, String] = Map[String, String](), preDeleteNodesScript: Option[PreDeleteNodes] = None, deploymentModel: Option[SortedMap[String, HashMap[String, InstallationPart]]] = None)
 
 case class AccessPoint(name: String, url: String)
 
