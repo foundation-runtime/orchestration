@@ -17,15 +17,17 @@
 package com.cisco.oss.foundation.orchestration.scope.resource
 
 import java.util.HashSet
+import javax.servlet.http.HttpServletRequest
 
 import com.cisco.oss.foundation.orchestration.scope.model.{Instance, Product, System, _}
 import com.cisco.oss.foundation.orchestration.scope.provision.model.ProductRepoInfo
 import com.cisco.oss.foundation.orchestration.scope.utils._
 import com.wordnik.swagger.annotations.Api
 import org.apache.commons.lang.StringUtils
-import org.springframework.http.HttpStatus
+import org.springframework.http.{HttpEntity, HttpStatus}
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation._
+import org.springframework.web.method.annotation.RequestHeaderMethodArgumentResolver
 
 import scala.collection.JavaConversions._
 import scala.collection.immutable.Map
@@ -52,7 +54,7 @@ class SystemsResources extends Slf4jLogger with BasicResource {
       systems map (
         system => {
           system.copy(password = "****")
-      })
+        })
     }
 
   }
@@ -313,4 +315,26 @@ class ProductsResource extends Slf4jLogger with BasicResource {
   }
 
 
+}
+
+@RestController
+@RequestMapping(value = Array[String]("monitor"))
+class InstanceMonitorResource extends Slf4jLogger with BasicResource {
+
+  //crontab -l | { cat; echo "0 0 0 0 0 some entry"; } | crontab -
+  @RequestMapping(method = Array[RequestMethod](RequestMethod.POST), produces = Array[String]("application/json"))
+  @ResponseBody
+  def machineHeartbeat(request: HttpServletRequest, @RequestParam("instanceId") id: String, @RequestParam("machineName") machineName: String) = {
+
+    ScopeUtils.time(logger, "machineHeartbeat-rest") {
+      logInfo(s"Get heartbeat from Instance: $id, machine: $machineName")
+      val machineIp = request.getRemoteHost
+
+      val instance = scopedb.findInstance(id).getOrElse(throw new InstanceNotFound)
+
+
+
+    }
+
+  }
 }
