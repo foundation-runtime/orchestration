@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
 import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.module.scala.JsonScalaEnumeration
 import com.novus.salat.annotations._
+import org.joda.time.DateTime
 import org.springframework.data.annotation.Id
 
 import scala.annotation.meta.field
@@ -64,7 +65,18 @@ case class Service(@Key("_id") @(Id@field) id: String, productName: String, prod
 
 case class HostDetails(hostName: String, hostId: String, hostIp: String)
 
-case class Instance(@Key("_id") @(Id@field) instanceId: String, systemId: String, instanceName: String, status: Option[String], details: Option[String], product: Product, machineIds: Map[String, ScopeNodeMetadata], accessPoints: List[AccessPoint], deletable: Option[Boolean], rsaKeyPair: Map[String, String] = Map[String, String](), preDeleteNodesScript: Option[PreDeleteNodes] = None, deploymentModel: Option[SortedMap[String, HashMap[String, InstallationPart]]] = None)
+case class Instance(@Key("_id") @(Id@field) instanceId: String,
+                    systemId: String,
+                    instanceName: String,
+                    status: Option[String],
+                    details: Option[String],
+                    product: Product,
+                    machineIds: Map[String, ScopeNodeMetadata],
+                    accessPoints: List[AccessPoint],
+                    deletable: Option[Boolean],
+                    rsaKeyPair: Map[String, String] = Map[String, String](),
+                    preDeleteNodesScript: Option[PreDeleteNodes] =
+                    None, deploymentModel: Option[SortedMap[String, HashMap[String, InstallationPart]]] = None)
 
 case class AccessPoint(name: String, url: String)
 
@@ -163,7 +175,8 @@ case class ScopeNodeMetadata(val id: String, val hostname: String, fqdn: Option[
                              provisionStatus: String,
                              sshUser: String = "root",
                              existingMachine: Boolean = false,
-                             installedModules: List[String] = List())
+                             installedModules: List[String] = List(),
+                             heartbeat: DateTime = DateTime.now())
 
 case class PreDeleteSection(val nodes: List[String],
                             val script: String)

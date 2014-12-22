@@ -19,6 +19,8 @@ package com.cisco.oss.foundation.orchestration.scope.dblayer
 import com.cisco.oss.foundation.orchestration.scope.model._
 import java.util
 
+import org.joda.time.DateTime
+
 trait SCOPeDB {
   def saveProductPatch(productId: String, patchData: UpdateInstanceData)
   def createSystem(system: System)
@@ -33,6 +35,7 @@ trait SCOPeDB {
   def createInstance(instance: Instance)
   def updateInstance(instance: Instance)
   def updateMachineStatus(systemId: String, instanceId: String, machineName: String, status: String, modulesName: Option[scala.collection.mutable.Set[String]])
+  def updateMachineHeartbeat(systemId: String, instanceId: String, machineName: String, lastHeartbeat: DateTime): Unit
   def findInstance(instanceId: String): Option[Instance]
   def findInstanceBySystemId(systemId: String): Option[util.Collection[Instance]]
   def deleteSystem(systemId: String)

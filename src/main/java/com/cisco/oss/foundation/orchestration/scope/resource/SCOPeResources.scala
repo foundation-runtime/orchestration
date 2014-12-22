@@ -24,6 +24,7 @@ import com.cisco.oss.foundation.orchestration.scope.provision.model.ProductRepoI
 import com.cisco.oss.foundation.orchestration.scope.utils._
 import com.wordnik.swagger.annotations.Api
 import org.apache.commons.lang.StringUtils
+import org.joda.time.DateTime
 import org.springframework.http.{HttpEntity, HttpStatus}
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation._
@@ -332,7 +333,12 @@ class InstanceMonitorResource extends Slf4jLogger with BasicResource {
 
       val instance = scopedb.findInstance(id).getOrElse(throw new InstanceNotFound)
 
-
+      instance.machineIds.get(machineName) match {
+        case None => logInfo(s"($id) Got heartbeat from $machineName with IP $machineIp but this machine does not exists.")
+        case Some(details) => {
+          scopedb.updateMachineHeartbeat(instance.systemId, id, machineName, DateTime.now())
+        }
+      }
 
     }
 

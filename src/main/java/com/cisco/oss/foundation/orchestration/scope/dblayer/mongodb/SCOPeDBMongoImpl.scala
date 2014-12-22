@@ -30,6 +30,7 @@ import com.mongodb.casbah.commons.MongoDBObject
 import com.mongodb.casbah.query.Imports._
 import com.novus.salat._
 import com.novus.salat.global._
+import org.joda.time.DateTime
 import org.springframework.stereotype.Component
 
 import scala.actors.threadpool.locks.ReentrantLock
@@ -295,6 +296,28 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
       productsPatchesdb.save(grater[PatchDBObject].asDBObject(PatchDBObject(s"${Platform.currentTime.toString}_${patchData.patchName}_${productId}",
         productId,
         ScopeUtils.mapper.writeValueAsString(patchData))))
+    }
+  }
+
+  def updateMachineHeartbeat(systemId: String, instanceId: String, machineName: String, lastHeartbeat: DateTime): Unit = {
+    ScopeUtils.time(logger, "updateMachineHeartbeat-db") {
+      val q = MongoDBObject("_id" -> instanceId)
+      val u = $set(s"machineIds.$machineName.heartbeat" -> lastHeartbeat)
+      val lock = lockMap.getOrElseUpdate(s"$systemId-$instanceId", Some(new ReentrantLock(true)))
+      lock match {
+        case Some(l) => l.lock()
+        case None =>
+        case _ =>
+      }
+      try {
+        instancesdb.update(q, u)
+      } finally {
+        lock match {
+          case Some(l) => l.unlock()
+          case None =>
+          case _ =>
+        }
+      }
     }
   }
 
