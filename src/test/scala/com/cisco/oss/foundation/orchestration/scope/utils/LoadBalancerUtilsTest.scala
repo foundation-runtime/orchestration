@@ -16,6 +16,7 @@
 
 package com.cisco.oss.foundation.orchestration.scope.utils
 
+import com.cisco.oss.foundation.orchestration.scope.model.{Product, Instance}
 import org.junit.Test
 import org.scalatest.junit.JUnitSuite
 import org.scalatest.junit.MustMatchersForJUnit
@@ -34,7 +35,7 @@ class LoadBalancerUtilsTest extends Slf4jLogger with JUnitSuite with ShouldMatch
     utils.addBackendServer("10.45.37.146:6040")
     utils.addBackendServer("10.45.37.52:6040")
 
-    utils.createLoadBalancer("IM")
+    utils.createLoadBalancer("IM", Instance("id", "sys", "name", None, None, Product("id", "name", "version", List(), "url", None), Map(), List(), None, Map(), None, None))
 
 
     println("end")

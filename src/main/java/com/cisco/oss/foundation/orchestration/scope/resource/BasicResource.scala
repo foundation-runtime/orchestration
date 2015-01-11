@@ -21,6 +21,7 @@ import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor}
 import javax.annotation.Resource
 import javax.servlet.http.HttpServletRequest
 
+import com.cisco.oss.foundation.ip.utils.IpUtils
 import com.cisco.oss.foundation.orchestration.scope.configuration.IComponentInstallation
 import com.cisco.oss.foundation.orchestration.scope.dblayer.SCOPeDB
 import com.cisco.oss.foundation.orchestration.scope.model._
@@ -300,7 +301,7 @@ trait BasicResource extends Slf4jLogger {
         node.existingInstance match {
           case None => {
             instance = updateInstanceStatusDetails(instance, s"Creating machine ${node.name}")
-            vmUtils.createVM(system.systemId, instance.instanceName, instance.product.productName, node, rsaKeyPair)
+            vmUtils.createVM(system.systemId, instance.instanceName, instance.product.productName, node, rsaKeyPair, IpUtils.getHostName, ScopeUtils.configuration.getInt("scope.http.port"), instance.instanceId)
           }
           case Some(details) => {
             future {

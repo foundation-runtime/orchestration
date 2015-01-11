@@ -16,7 +16,8 @@
 
 package com.cisco.oss.foundation.orchestration.scope.utils
 
-import com.cisco.oss.foundation.orchestration.scope.model.{Network, Node}
+import com.cisco.oss.foundation.ip.utils.IpUtils
+import com.cisco.oss.foundation.orchestration.scope.model.{Instance, Network, Node}
 import com.google.common.collect.ImmutableList
 import org.jclouds.scriptbuilder.domain.Statements._
 import org.jclouds.scriptbuilder.domain.{OsFamily, Statement, StatementList}
@@ -95,7 +96,7 @@ class LoadBalancerUtils(port: Int, applicationName: String, urlPrefix: String, i
 
   }
 
-  def createLoadBalancer(productRepoUrl: String)(implicit ec:ExecutionContext) {
+  def createLoadBalancer(productRepoUrl: String, instance: Instance)(implicit ec:ExecutionContext) {
     val utils = new VMUtils
 
     val loadBalancerDescription = s"${productRepoUrl}loadbalancer.json"
@@ -110,7 +111,7 @@ class LoadBalancerUtils(port: Int, applicationName: String, urlPrefix: String, i
       }
     }
 
-    val createVMFuture = utils.createVM(systemName, instanceName, "load-balancer", node.copy(name = s"$systemName-$instanceName-lb-$applicationName", network = newNetwork), rsaKeyPair)
+    val createVMFuture = utils.createVM(systemName, instanceName, "load-balancer", node.copy(name = s"$systemName-$instanceName-lb-$applicationName", network = newNetwork), rsaKeyPair, IpUtils.getHostName, ScopeUtils.configuration.getInt("scope.http.port"), instance.instanceId)
 
 
     createVMFuture onSuccess {

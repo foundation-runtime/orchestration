@@ -16,6 +16,9 @@
 
 package com.cisco.oss.foundation.orchestration.scope.utils
 
+import com.cisco.oss.foundation.orchestration.scope.model.{Products, Instance}
+import com.fasterxml.jackson.databind.jsonschema.JsonSchema
+import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper
 import org.junit.{Assert, Test}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -41,5 +44,13 @@ class ScopeUtilsTest extends Slf4jLogger {
     Assert.assertEquals(Map(1-> "d", 2-> "f"), unionMap)
   }
 
+  @Test
+  def pojo2schema() = {
+
+    val visitor = new SchemaFactoryWrapper()
+    ScopeUtils.mapper.acceptJsonFormatVisitor(classOf[com.cisco.oss.foundation.orchestration.scope.model.Product], visitor)
+    val schema = visitor.finalSchema();
+    println(ScopeUtils.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(schema));
+  }
 
 }

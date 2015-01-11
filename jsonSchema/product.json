@@ -1,0 +1,86 @@
+{
+  "type" : "object",
+  "properties" : {
+    "repoUrl" : {
+      "type" : "string"
+    },
+    "productVersion" : {
+      "type" : "string"
+    },
+    "productOptions" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "optionType" : {
+            "type" : "any"
+          },
+          "defaultValue" : {
+            "type" : "string"
+          },
+          "additionalInfo" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            }
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "enumeration" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "value" : {
+            "type" : "string"
+          },
+          "key" : {
+            "type" : "string"
+          },
+          "required" : {
+            "type" : "boolean"
+          }
+        }
+      }
+    },
+    "patches" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "type" : "object",
+        "properties" : {
+          "patchName" : {
+            "type" : "string"
+          },
+          "updateUrl" : {
+            "type" : "string"
+          },
+          "installModules" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "object",
+              "properties" : {
+                "modules" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "object"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "id" : {
+      "type" : "string"
+    },
+    "productName" : {
+      "type" : "string"
+    }
+  }
+}

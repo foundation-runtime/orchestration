@@ -94,7 +94,9 @@ class VMUtils extends Slf4jLogger {
   private val computeServiceContext = JcloudsFactory.computeServiceContext()
 
 
-  def createVmTemplate(node: Node, group: String, rsaKeyPair: Map[String, String], tagsList: List[String] = List(), defaultSecurityGroup: List[String]) = {
+  def createVmTemplate(node: Node, group: String, rsaKeyPair: Map[String, String], tagsList: List[String] = List(), defaultSecurityGroup: List[String], scopeMachineName: String,
+                       scopePort: Int,
+                       instanceId: String) = {
     var tags = tagsList
     var networks = List[String]()
     var openPorts = List[String]()
@@ -148,7 +150,7 @@ class VMUtils extends Slf4jLogger {
 
     def scriptString: Option[String] = {
       if (node.postConfiguration){
-        val bootstrapStatements: BootstrapStatements = new BootstrapStatements(VMUtils.privateSubnets, VMUtils.baseRepoUrl, imageVersion, hasPublicIP, node.name, openPorts, VMUtils.cloudProvider)
+        val bootstrapStatements: BootstrapStatements = new BootstrapStatements(VMUtils.privateSubnets, VMUtils.baseRepoUrl, imageVersion, hasPublicIP, node.name, openPorts, VMUtils.cloudProvider, scopeMachineName, scopePort, instanceId)
         val script = VMUtils.cloudProvider match {
           case "vsphere" => {
             val shellScriptLoader: ShellScriptLoader = new ShellScriptLoader(VMUtils.imageScriptDir, imageScript)
@@ -272,10 +274,12 @@ class VMUtils extends Slf4jLogger {
 
   }
 
-  def createVM(systemId: String, instanceName: String, productName: String, node: Node, rsaKeyPair: Map[String, String])(implicit ec:ExecutionContext) = {
+  def createVM(systemId: String, instanceName: String, productName: String, node: Node, rsaKeyPair: Map[String, String], scopeMachineName: String,
+               scopePort: Int,
+               instanceId: String)(implicit ec:ExecutionContext) = {
     val groupName = s"$systemId-$instanceName".toLowerCase
     val createVmFuture = future {
-      val template = createVmTemplate(node.copy(name = node.name.toLowerCase), groupName, rsaKeyPair, List(systemId, instanceName.toLowerCase, productName), VMUtils.getDefaultSecurityGroups)
+      val template = createVmTemplate(node.copy(name = node.name.toLowerCase), groupName, rsaKeyPair, List(systemId, instanceName.toLowerCase, productName), VMUtils.getDefaultSecurityGroups, scopeMachineName, scopePort, instanceId)
       try {
         val nodeMetaData = computeServiceContext.getComputeService.createNodesInGroup(groupName, 1, template)
         val nodeMetaDataHead = waitForNodeDataToBeSet(nodeMetaData.head.getId())

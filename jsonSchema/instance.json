@@ -1,0 +1,356 @@
+{
+  "type" : "object",
+  "properties" : {
+    "deploymentModel" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "type" : "object",
+        "additionalProperties" : {
+          "type" : "object",
+          "properties" : {
+            "puppet" : {
+              "type" : "object",
+              "properties" : {
+                "hostname" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string"
+                  }
+                },
+                "modulesName" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string"
+                  }
+                },
+                "configuration" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "string"
+                  }
+                },
+                "script" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "plugin" : {
+              "type" : "object",
+              "properties" : {
+                "configuration" : {
+                  "type" : "string"
+                },
+                "className" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "systemId" : {
+      "type" : "string"
+    },
+    "product" : {
+      "type" : "object",
+      "properties" : {
+        "repoUrl" : {
+          "type" : "string"
+        },
+        "productVersion" : {
+          "type" : "string"
+        },
+        "productOptions" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "properties" : {
+              "optionType" : {
+                "type" : "any"
+              },
+              "defaultValue" : {
+                "type" : "string"
+              },
+              "additionalInfo" : {
+                "type" : "object",
+                "additionalProperties" : {
+                  "type" : "string"
+                }
+              },
+              "description" : {
+                "type" : "string"
+              },
+              "label" : {
+                "type" : "string"
+              },
+              "enumeration" : {
+                "type" : "array",
+                "items" : {
+                  "type" : "string"
+                }
+              },
+              "value" : {
+                "type" : "string"
+              },
+              "key" : {
+                "type" : "string"
+              },
+              "required" : {
+                "type" : "boolean"
+              }
+            }
+          }
+        },
+        "patches" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "type" : "object",
+            "properties" : {
+              "patchName" : {
+                "type" : "string"
+              },
+              "updateUrl" : {
+                "type" : "string"
+              },
+              "installModules" : {
+                "type" : "object",
+                "additionalProperties" : {
+                  "type" : "object",
+                  "properties" : {
+                    "modules" : {
+                      "type" : "array",
+                      "items" : {
+                        "type" : "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "id" : {
+          "type" : "string"
+        },
+        "productName" : {
+          "type" : "string"
+        }
+      }
+    },
+    "instanceId" : {
+      "type" : "string"
+    },
+    "preDeleteNodesScript" : {
+      "type" : "object",
+      "properties" : {
+        "sections" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "properties" : {
+              "nodes" : {
+                "type" : "array",
+                "items" : {
+                  "type" : "string"
+                }
+              },
+              "script" : {
+                "type" : "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "instanceName" : {
+      "type" : "string"
+    },
+    "machineIds" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "type" : "object",
+        "properties" : {
+          "privateAddresses" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "existingMachine" : {
+            "type" : "boolean"
+          },
+          "fqdn" : {
+            "type" : "string"
+          },
+          "publicAddresses" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "heartbeat" : {
+            "type" : "object",
+            "properties" : {
+              "year" : {
+                "type" : "integer"
+              },
+              "dayOfYear" : {
+                "type" : "integer"
+              },
+              "equalNow" : {
+                "type" : "boolean"
+              },
+              "weekyear" : {
+                "type" : "integer"
+              },
+              "chronology" : {
+                "type" : "object",
+                "properties" : {
+                  "zone" : {
+                    "type" : "object",
+                    "properties" : {
+                      "fixed" : {
+                        "type" : "boolean"
+                      },
+                      "id" : {
+                        "type" : "string"
+                      }
+                    }
+                  }
+                }
+              },
+              "weekOfWeekyear" : {
+                "type" : "integer"
+              },
+              "secondOfMinute" : {
+                "type" : "integer"
+              },
+              "millisOfDay" : {
+                "type" : "integer"
+              },
+              "monthOfYear" : {
+                "type" : "integer"
+              },
+              "dayOfWeek" : {
+                "type" : "integer"
+              },
+              "beforeNow" : {
+                "type" : "boolean"
+              },
+              "minuteOfDay" : {
+                "type" : "integer"
+              },
+              "dayOfMonth" : {
+                "type" : "integer"
+              },
+              "era" : {
+                "type" : "integer"
+              },
+              "zone" : {
+                "type" : "object",
+                "properties" : {
+                  "fixed" : {
+                    "type" : "boolean"
+                  },
+                  "id" : {
+                    "type" : "string"
+                  }
+                }
+              },
+              "yearOfCentury" : {
+                "type" : "integer"
+              },
+              "centuryOfEra" : {
+                "type" : "integer"
+              },
+              "hourOfDay" : {
+                "type" : "integer"
+              },
+              "secondOfDay" : {
+                "type" : "integer"
+              },
+              "yearOfEra" : {
+                "type" : "integer"
+              },
+              "millis" : {
+                "type" : "integer"
+              },
+              "minuteOfHour" : {
+                "type" : "integer"
+              },
+              "millisOfSecond" : {
+                "type" : "integer"
+              },
+              "afterNow" : {
+                "type" : "boolean"
+              }
+            }
+          },
+          "url" : {
+            "type" : "string"
+          },
+          "tags" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "privateKey" : {
+            "type" : "string"
+          },
+          "hostname" : {
+            "type" : "string"
+          },
+          "provisionStatus" : {
+            "type" : "string"
+          },
+          "installedModules" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "sshUser" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "string"
+          },
+          "group" : {
+            "type" : "string"
+          }
+        }
+      }
+    },
+    "deletable" : {
+      "type" : "any"
+    },
+    "rsaKeyPair" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "type" : "string"
+      }
+    },
+    "details" : {
+      "type" : "string"
+    },
+    "accessPoints" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "url" : {
+            "type" : "string"
+          }
+        }
+      }
+    },
+    "status" : {
+      "type" : "string"
+    }
+  }
+}

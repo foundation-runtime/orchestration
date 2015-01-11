@@ -10,8 +10,8 @@ the materializer output would be the deployment capture of the current product i
 <h3>Materializer input</h3>
 The materializer input is:
 <ol>
-<li>Instance as json string</li>
-<li>Product as json string</li>
+<li><a herf=https://github.com/foundation-runtime/orchestration/blob/master/jsonSchema/instance.json>Instance</a> as json string</li>
+<li><a herf=https://github.com/foundation-runtime/orchestration/blob/master/jsonSchema/product.json>Product</a> as json string</li>
 </ol>
 separated with ~;~
 

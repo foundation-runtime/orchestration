@@ -250,7 +250,7 @@ class VMUtilsTest extends Slf4jLogger  {
   @Test
   def createInitScriptTest() {
     val util = new VMUtils()
-    val script = new BootstrapStatements(List((new SubnetUtils("10.0.0.0/24"), "gateway")), "scopeIP", "osVersion", true, "nodename", List("5015", "6040", "6060"), "stub")
+    val script = new BootstrapStatements(List((new SubnetUtils("10.0.0.0/24"), "gateway")), "scopeIP", "osVersion", true, "nodename", List("5015", "6040", "6060"), "stub", "scopeMachineName", 6041, "instanceId")
     val stringScript = script.render(OsFamily.UNIX)
     val s1 = "iptables -A INPUT -i $dev -p tcp --dport 5015 -j ACCEPT"
     val s2 = "iptables -A INPUT -i $dev -p tcp --dport 6040 -j ACCEPT"
@@ -300,7 +300,7 @@ class VMUtilsTest extends Slf4jLogger  {
 
     val node = ScopeUtils.mapper.readValue(nodeJson, classOf[Node])
 
-    val template = util.createVmTemplate(node, "test-test", SshKeys.generate().toMap, List(), List())
+    val template = util.createVmTemplate(node, "test-test", SshKeys.generate().toMap, List(), List(), "scopeMachineName", 6041, "instanceId")
 
 
     val stringScript = template.getOptions.getRunScript.render(OsFamily.UNIX)
@@ -343,7 +343,7 @@ class VMUtilsTest extends Slf4jLogger  {
 
     val node = ScopeUtils.mapper.readValue(nodeJson, classOf[Node])
 
-    val vmFuture = util.createVM("junit", "test", "test", node, SshKeys.generate().toMap)
+    val vmFuture = util.createVM("junit", "test", "test", node, SshKeys.generate().toMap, "scopeMachineName", 6041, "instanceId")
     vmFuture.onSuccess {
       case vm => //util.deleteVM(vm)
     }

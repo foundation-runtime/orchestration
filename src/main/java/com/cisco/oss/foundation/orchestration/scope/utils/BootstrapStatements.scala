@@ -30,7 +30,16 @@ import scala.io.Source
  * Created with IntelliJ IDEA.
  * User: igreenfi
  */
-class BootstrapStatements(val networkAddress: List[(SubnetUtils, String)], val baseRepoUrl: String, val osVersion: String, val hasPublicIp: Boolean, val nodeName : String, val openPorts: List[String] = List(), provider: String) extends ScopeStatement {
+class BootstrapStatements(val networkAddress: List[(SubnetUtils, String)],
+                          val baseRepoUrl: String,
+                          val osVersion: String,
+                          val hasPublicIp: Boolean,
+                          val nodeName : String,
+                          val openPorts: List[String] = List(),
+                          provider: String,
+                          scopeMachineName: String,
+                          scopePort: Int,
+                          instanceId: String) extends ScopeStatement {
 
   private val statements: ImmutableList.Builder[Statement] = ImmutableList.builder[Statement]
   private val baseDir:String = "/opt/cisco/scope/scripts"
@@ -128,6 +137,7 @@ class BootstrapStatements(val networkAddress: List[(SubnetUtils, String)], val b
     statements.add(exec("yum -y install ntp"))
     // Configure ntp service to synchronize clock on restart
     statements.add(exec("sed -e \"s#\\\"-u ntp:ntp#\\\"-x -u ntp:ntp#\" -i.bak /etc/sysconfig/ntpd"))
+    statements.add(exec(s"crontab -l | { cat; echo '10 * * * * sleep `RANDOM % 5`.`RANDOM % 100`; wget http://$scopeMachineName:$scopePort/monitor?instanceId=$instanceId&machineName=$nodeName'; } | crontab - "))
 
     if (Files.exists(Paths.get(s"$baseDir/bootstrap.sh")))
       Source.fromFile(s"$baseDir/bootstrap.sh").getLines().foreach(line => statements.add(exec(line)))
