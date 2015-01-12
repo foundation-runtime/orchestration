@@ -15,6 +15,24 @@ The materializer input is:
 </ol>
 separated with ~;~
 
+Product Json sample:
+
+```json
+{
+    "_id" : "Gluster-3.4.2.1",
+    "productName" : "Gluster",
+    "productOptions" : [{
+        "key" : "nodecount",
+        "label" : "Number of gluster nodes to build",
+        "optionType" : "string",
+        "defaultValue" : "2",
+        "enumeration" : ["2"]
+    }],
+    "productVersion" : "3.4.2.1",
+    "repoUrl" : "http://<products-server>/scope-products/Gluster-3.4.2.1/"
+}
+```
+
 <h3>Materializer output</h3>
 The materializer output has this schema:
 
