@@ -9,6 +9,9 @@ Support for the <a href=https://jclouds.apache.org/ >jclouds</a> ENV project can
 SCOPE deployment consist on "product". it define the structure the final deplotment will have, number of VMs, which component will we be on which VM/s and so on.
 
 once you define SCOPE product you can deploy it again and again on each virtualization enviroment SCOPE support with no other change except SCOPE configuration.
+
+You can see <a href=https://github.com/foundation-runtime/orchestration/tree/master/src/main/rpm/products/Gluster-3.4.2.1>GlusterFS Product</a> as example.
+
 <h2>Structure</h2>
 <img src=https://github.com/foundation-runtime/orchestration/blob/master/images/scope_product.png>
 
