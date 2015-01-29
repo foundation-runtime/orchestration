@@ -9,6 +9,8 @@ All that, in a single click, without having to go through any cloud-dashboard, w
 A SCOPE deployment consist of a "product". It defines the structure of the final deployment, the number of VMs, which application will we be installed on which VM and many other details.
 
 Once a SCOPE product is defined, it can be deploy again and again on each virtualization enviroment SCOPE supports, with no required changes to the product. The product will be installed on the virtualization environment that Scope is configured to work with.
+
++You can see <a href=https://github.com/foundation-runtime/orchestration/tree/master/src/main/rpm/products/Gluster-3.4.2.1>GlusterFS Product</a> as example.
 <h1>Supported Enviroments</h1>
 Scope supports:
 <a href="http://aws.amazon.com/">AWS</a>, <a href="http://www.vmware.com/products/vsphere">VMware vSphere</a>, <a href="www.rackspace.com/">Rackspace</a> and <a href="https://www.openstack.org/">OpenStack</a>.
