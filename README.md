@@ -2,7 +2,7 @@
 ============
 <h1>Supported Enviroments</h1>
 Scope supports:
-<a href="aws.amazon.com/">AWS</a>, <a href="http://www.vmware.com/products/vsphere">VMware vSphere</a>, <a href="www.rackspace.com/">Rackspace</a> and <a href="https://www.openstack.org/">OpenStack</a>.
+<a href="http://aws.amazon.com/">AWS</a>, <a href="http://www.vmware.com/products/vsphere">VMware vSphere</a>, <a href="www.rackspace.com/">Rackspace</a> and <a href="https://www.openstack.org/">OpenStack</a>.
 
 Support for the <a href=https://jclouds.apache.org/ >jclouds</a> ENV project can be added with little effort.
 <h1>Scope product</h1>
