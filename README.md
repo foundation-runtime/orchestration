@@ -1,9 +1,10 @@
 <img src=https://github.com/foundation-runtime/orchestration/blob/master/images/ScopeLogo_noSlogan.png>
 ============
-<h1>Supported enviroments</h1>
-As for now AWS, VMware vSphere, Rackspace, OpenStack
+<h1>Supported Enviroments</h1>
+Scope supports:
+<a href="aws.amazon.com/">AWS</a>, <a href="http://www.vmware.com/products/vsphere">VMware vSphere</a>, <a href="www.rackspace.com/">Rackspace</a> and <a href="https://www.openstack.org/">OpenStack</a>.
 
-We can add each ENV <a href=https://jclouds.apache.org/ >jclouds</a> project support with little effort.
+Support for the <a href=https://jclouds.apache.org/ >jclouds</a> ENV project can be added with little effort.
 <h1>Scope product</h1>
 SCOPE deployment consist on "product". it define the structure the final deplotment will have, number of VMs, which component will we be on which VM/s and so on.
 
