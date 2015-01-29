@@ -3,7 +3,7 @@
 <h1>Supported enviroments</h1>
 As for now AWS, VMware vSphere, Rackspace, OpenStack
 
-We can add each ENV jClouds project support with little effort.
+We can add each ENV <a href=https://jclouds.apache.org/ >jclouds</a> project support with little effort.
 <h1>Scope product</h1>
 SCOPE deployment consist on "product". it define the structure the final deplotment will have, number of VMs, which component will we be on which VM/s and so on.
 
