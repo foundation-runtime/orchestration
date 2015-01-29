@@ -1,4 +1,4 @@
-SCOPE Product
+<img src=https://github.com/foundation-runtime/orchestration/blob/master/images/ScopeLogo_noSlogan.png>
 ============
 <h2>Structure</h2>
 <img src=https://github.com/foundation-runtime/orchestration/blob/master/images/scope_product.png>
