@@ -10,7 +10,7 @@ A SCOPE deployment consists of a "product". It defines the structure of the fina
 
 Once a SCOPE product is defined, it can be deployed again and again on each of the virtualization enviroments that SCOPE supports, with no required changes to the product. The product will be installed on the virtualization environment that Scope is configured to work with.
 
-<a href=https://github.com/foundation-runtime/orchestration/tree/master/src/main/rpm/products/Gluster-3.4.2.1>GlusterFS Product</a> is an example of a product.
+<a href=https://github.com/foundation-runtime/orchestration/tree/master/src/main/rpm/products/Gluster-3.4.2.1>GlusterFS Product</a> is an example of a product that installs <a href="http://www.gluster.org/">GlasterFS</a>, a distributed filesystem, on two VMs.
 <h1>Supported Enviroments</h1>
 Scope supports:
 <a href="http://aws.amazon.com/">AWS</a>, <a href="http://www.vmware.com/products/vsphere">VMware vSphere</a>, <a href="www.rackspace.com/">Rackspace</a> and <a href="https://www.openstack.org/">OpenStack</a>.
