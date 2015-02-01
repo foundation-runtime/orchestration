@@ -12,10 +12,10 @@ Once a SCOPE product is defined, it can be deployed again and again on each of t
 
 <a href=https://github.com/foundation-runtime/orchestration/tree/master/src/main/rpm/products/Gluster-3.4.2.1>GlusterFS Product</a> is an example of a product that installs <a href="http://www.gluster.org/">GlasterFS</a>, a distributed filesystem, on two VMs.
 <h1>Supported Enviroments</h1>
-Scope supports:
+Scope uses <a href=https://jclouds.apache.org/ >jclouds</a> as its orchestration abstraction layer and has been tested with the following providers:
 <a href="http://aws.amazon.com/">AWS</a>, <a href="http://www.vmware.com/products/vsphere">VMware vSphere</a>, <a href="www.rackspace.com/">Rackspace</a> and <a href="https://www.openstack.org/">OpenStack</a>.
 
-Support for the <a href=https://jclouds.apache.org/ >jclouds</a> ENV project can be added with little effort.
+
 
 <h2>Structure</h2>
 <img src=https://github.com/foundation-runtime/orchestration/blob/master/images/scope_product.png>
