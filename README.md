@@ -19,7 +19,13 @@ Once a SCOPE product is defined, it can be deployed again and again on each of t
 
 
 <h2>Structure</h2>
-<img src=https://github.com/foundation-runtime/orchestration/blob/master/images/scope_product.png>
+A Scope <em>product</em> is a directory containing three sub-directories: materializer, prodpuppet and yum. The name of the top directory is should be <name>-<version>, where <em>name</em> and <em>version</em> are the name and the version of the product.
+
+Here is the folder structure of the <a href=https://github.com/foundation-runtime/orchestration/tree/master/src/main/rpm/products/Gluster-3.4.2.1>GlusterFS Scope Product</a>, provided by the default Scope intallation:<br>
+<img src=https://github.com/foundation-runtime/orchestration/blob/master/images/scope_product.png/>
+
+
+
 
 <h2>Materializer</h2>
 materializer directory will contain 'run.sh' or 'run.bat' script that will actually run the materializer. <br>
