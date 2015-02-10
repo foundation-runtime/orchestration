@@ -16,7 +16,7 @@
 
 package com.cisco.oss.foundation.orchestration.scope
 
-import org.junit.{Assert, Test}
+import org.junit.{Ignore, Assert, Test}
 import com.mongodb.{MongoClient, Mongo}
 import com.novus.salat._
 import com.novus.salat.global._
@@ -31,6 +31,7 @@ import scala.collection.immutable.Map
  * Time: 10:20 AM
  * To change this template use File | Settings | File Templates.
  */
+@Ignore
 class ScopeModelTest {
   @Test
   def testScopeNodeMetadata() {

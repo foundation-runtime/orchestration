@@ -19,7 +19,7 @@ package com.cisco.oss.foundation.orchestration.scope.scripting.scala
 import java.io.File
 
 import com.cisco.oss.foundation.orchestration.scope.scripting.ScalaScriptEngineWrapper
-import org.junit.Test
+import org.junit.{Ignore, Test}
 //import opt.cisco.scope.plugins.{WaitForSocketPlugin}
 
 /**
@@ -28,6 +28,7 @@ import org.junit.Test
  * Date: 08/06/2014 2:48 PM
  * Package: com.cisco.oss.foundation.orchestration.scope.scripting.scala
  */
+@Ignore
 class SSETest {
 
   @Test

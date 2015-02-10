@@ -19,7 +19,7 @@ package com.cisco.oss.foundation.orchestration.scope.jclouds
 import com.google.common.util.concurrent.MoreExecutors.sameThreadExecutor;
 import com.cisco.oss.foundation.orchestration.scope.utils._
 import org.scalatest.junit.{MustMatchersForJUnit, ShouldMatchersForJUnit, JUnitSuite}
-import org.junit.Test
+import org.junit.{Ignore, Test}
 import org.jclouds.ContextBuilder
 
 import org.jclouds.compute.ComputeServiceContext;
@@ -48,6 +48,7 @@ import java.util.Properties
  * Time: 8:58 AM
  * To change this template use File | Settings | File Templates.
  */
+@Ignore
 class JcouldesTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUnit with MustMatchersForJUnit {
 
 

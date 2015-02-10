@@ -22,7 +22,7 @@ import com.cisco.oss.foundation.orchestration.scope.model.Module
 import com.cisco.oss.foundation.orchestration.scope.utils.ScopeUtils
 import com.vmware.vim25._
 import com.vmware.vim25.mo._
-import org.junit.Test
+import org.junit.{Ignore, Test}
 
 import scala.Predef._
 
@@ -32,6 +32,7 @@ import scala.Predef._
  * Date: 2/9/14
  * Time: 9:38 AM
  */
+@Ignore
 class VMWareTest {
 
   val spec: HostConnectSpec = new HostConnectSpec()

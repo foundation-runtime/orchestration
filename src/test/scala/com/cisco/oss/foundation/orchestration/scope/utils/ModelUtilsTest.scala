@@ -16,15 +16,22 @@
 
 package com.cisco.oss.foundation.orchestration.scope.utils
 
+import java.util
+
 import com.cisco.oss.foundation.orchestration.scope.model.{DeploymentModelCapture, InstallNodes, _}
 import com.google.common.collect.Lists
 import net.liftweb.json._
-import org.junit.{AfterClass, BeforeClass, Test}
+import org.jclouds.compute.domain.NodeMetadata
+import org.jclouds.compute.options.TemplateOptions
+import org.junit.{Ignore, AfterClass, BeforeClass, Test}
 import org.scalatest.junit.{JUnitSuite, MustMatchersForJUnit, ShouldMatchersForJUnit}
+import scala.collection.JavaConversions._
 
 import com.cisco.oss.foundation.orchestration.scope.provision.model.ProductRepoInfo
 
 object ModelUtilsTest {
+  val nodeInGroup = JcloudsFactory.computeServiceContext().getComputeService.createNodesInGroup("test",1, TemplateOptions.Builder.nodeNames(List("DFW/a5ce7260-805a-4f9d-a618-a4f9e1dd64b5"))).head
+
   val modelString = """
                       {
                       |  "preDeleteNodesScript" : {
@@ -264,16 +271,17 @@ object ModelUtilsTest {
 
   @BeforeClass def init() {
 
-
   }
 
   @AfterClass def stop() {
   }
 }
 
+@Ignore
 class NetworkUtilsTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUnit with MustMatchersForJUnit {
   @Test
   def testManupulateNetwork() {
+    ModelUtilsTest.nodeInGroup.getId
     NetworkUtils.configureIptables("DFW", "a5ce7260-805a-4f9d-a618-a4f9e1dd64b5", List("5015", "6401"))
   }
 }

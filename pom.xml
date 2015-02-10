@@ -38,6 +38,7 @@
         <jclouds.version>2.0.0-SNAPSHOT</jclouds.version>
         <casbah.version>2.7.1</casbah.version>
         <salat.version>1.9.9</salat.version>
+        <snapshotUpdatePolicy>daily</snapshotUpdatePolicy>
     </properties>
 
     <scm>
@@ -163,7 +164,7 @@
             <url>https://raw.github.com/igreenfield/jcloud-vsphere/snapshots-mvn-repo/</url>
             <snapshots>
                 <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
+                <updatePolicy>${snapshotUpdatePolicy}</updatePolicy>
             </snapshots>
             <releases>
                 <enabled>false</enabled>

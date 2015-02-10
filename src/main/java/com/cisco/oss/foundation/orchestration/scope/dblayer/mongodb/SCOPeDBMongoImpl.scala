@@ -27,6 +27,7 @@ import com.mongodb.MongoException.DuplicateKey
 import com.mongodb.WriteConcern
 import com.mongodb.casbah.MongoClient
 import com.mongodb.casbah.commons.MongoDBObject
+import com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers
 import com.mongodb.casbah.query.Imports._
 import com.novus.salat._
 import com.novus.salat.global._
@@ -42,6 +43,7 @@ class SCOPeDBMongoImpl extends SCOPeDB with Slf4jLogger {
   val host = ScopeUtils.configuration.getString("mongodb.host", "localhost")
   val port = ScopeUtils.configuration.getInt("mongodb.port", 27017)
 
+  RegisterJodaTimeConversionHelpers()
   val mongodbConnetion = MongoClient(host, port)
   val scopedb = mongodbConnetion("scope")
   scopedb.writeConcern = WriteConcern.FSYNC_SAFE

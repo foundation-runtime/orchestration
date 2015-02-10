@@ -22,10 +22,10 @@ import org.junit.Test
 /**
  * Created by igreenfi on 12/08/2014.
  */
-class ShellScriptLoaderTest {
+class ShellScriptLoaderTest extends Slf4jLogger {
 
   @Test
   def testLoad() {
-    new ShellScriptLoader("base_repo", "INCR_DSK-APP.sh").render(OsFamily.UNIX)
+    logInfo(new ShellScriptLoader("src/main/rpm/scripts", "bootstrap.sh").render(OsFamily.UNIX))
   }
 }

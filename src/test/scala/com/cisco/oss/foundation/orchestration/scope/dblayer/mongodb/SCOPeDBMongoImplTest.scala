@@ -19,6 +19,7 @@ package com.cisco.oss.foundation.orchestration.scope.dblayer.mongodb
 import com.cisco.oss.foundation.orchestration.scope.model.{Instance, Product, ScopeNodeMetadata}
 import com.cisco.oss.foundation.orchestration.scope.utils.ScopeUtils
 import com.mongodb.casbah.Imports._
+import com.mongodb.casbah.commons.conversions.scala.RegisterJodaTimeConversionHelpers
 import com.novus.salat._
 import com.novus.salat.global._
 import de.flapdoodle.embed.mongo.config.{MongodConfigBuilder, Net}
@@ -64,6 +65,7 @@ object SCOPeDBMongoImplTest {
   }
 
   def createScopeDB() {
+    RegisterJodaTimeConversionHelpers()
     val mongodbConnetion = MongoConnection("localhost", mongoPort)
     val scopedb = mongodbConnetion("scope")
     val instances = scopedb("instances")

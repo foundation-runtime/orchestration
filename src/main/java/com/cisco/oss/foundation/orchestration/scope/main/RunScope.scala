@@ -74,6 +74,7 @@ class RunScope extends Slf4jLogger {
     JettyHttpServerFactory.INSTANCE.startHttpServer("scope", servletMap, filterMap, Collections.singletonList[EventListener](new ContextLoaderListener(webConfig)))
 
     if (ScopeUtils.configuration.getBoolean("scope-ui.isEnabled", false)) {
+      logInfo("loading scope UI server!")
       val uiWebConfig = new XmlWebApplicationContext()
       uiWebConfig.setConfigLocation("classpath*:/META-INF/scopeUIApplicationContext.xml")
       uiWebConfig.registerShutdownHook()

@@ -277,6 +277,7 @@ class VMUtilsTest extends Slf4jLogger  {
         |        "osVersion": "6.0",
         |        "arch": "x86-64",
         |        "id": "",
+        |        "postConfiguration" : true,
         |        "network": [
         |          {
         |            "nicType": "internal",

@@ -16,7 +16,7 @@
 
 package com.cisco.oss.foundation.orchestration.scope.test
 
-import org.junit.Test
+import org.junit.{Ignore, Test}
 import com.cisco.oss.foundation.flowcontext.{FlowContext, FlowContextFactory}
 import scala.concurrent._
 import ExecutionContext.Implicits.global
@@ -24,6 +24,7 @@ import ExecutionContext.Implicits.global
 /**
  * Created by Yair Ogen on 27/03/2014.
  */
+@Ignore
 class FuturesTests {
 
 

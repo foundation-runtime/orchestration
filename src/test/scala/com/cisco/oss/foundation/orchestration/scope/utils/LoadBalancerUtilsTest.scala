@@ -17,7 +17,7 @@
 package com.cisco.oss.foundation.orchestration.scope.utils
 
 import com.cisco.oss.foundation.orchestration.scope.model.{Product, Instance}
-import org.junit.Test
+import org.junit.{Ignore, Test}
 import org.scalatest.junit.JUnitSuite
 import org.scalatest.junit.MustMatchersForJUnit
 import org.scalatest.junit.ShouldMatchersForJUnit
@@ -26,7 +26,7 @@ import scala.collection.JavaConversions._
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 
-
+@Ignore
 class LoadBalancerUtilsTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUnit with MustMatchersForJUnit  {
   @Test
   def testLoadBalancerUtils() {
