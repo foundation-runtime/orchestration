@@ -66,7 +66,7 @@ class materializer(materializerBase):
             accessPoints = []
             for i in range(0,nodeCount):
                 nodeName = self.createVmName(nodeNamePrefix + str(i), False)
-                accessPoints.append(self.createAccessPoint('node-' + str(i), 'https://<' + nodeName + '>:5015/ndsconsole/app.html'))
+                accessPoints.append(self.createAccessPoint('glusterFS-' + str(i), '****'))
 
 
             exposeAccessPoints['accessPoints'] = accessPoints
