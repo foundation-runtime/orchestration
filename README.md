@@ -1,7 +1,7 @@
 <img src=https://github.com/foundation-runtime/orchestration/blob/master/images/ScopeLogo_noSlogan.png>
 ============
 <H1>What is Scope?</H1>
-When deploying applications on the cloud, creating machines, installing, configuring and running applications becomes a daily task. Scope comes to the aid, be providing the ability to provition a system, install a range of applications on it and make them run together.
+When deploying applications on the cloud, creating machines, installing, configuring and running applications becomes a daily task. Scope comes to the aid, by providing the ability to provition a system, install a range of applications on it and make them run together.
 
 All that, in a single click, without having to go through any cloud-dashboard, without copying any files and without medling with configurations. 
 
