@@ -1,0 +1,39 @@
+
+
+Logo
+
+General description
+	What does Scope do?
+	Which cloud providers does Scope support?
+	
+
+
+Hello world
+	pre-req: cloud env user
+	Installation
+	Configuration
+	Compose Product
+		Basic materializer
+		Basic Puppet ()
+		Basic yum
+	Product structure/packaging
+	Run Product
+	
+
+Scope configuration
+	Details
+	
+Creating Products
+	materializer
+	product puppets
+	yum repo list
+
+
+Product examples
+	GlusterFS
+	Mongo cluster
+	Jenkins with slave
+	Distributed MySQL, cassandra
+	Distributed Wordpress/Drupla/joomla
+		
+FAQ
