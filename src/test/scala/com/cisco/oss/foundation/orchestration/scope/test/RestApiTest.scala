@@ -17,6 +17,7 @@
 package com.cisco.oss.foundation.orchestration.scope.test
 
 import com.cisco.oss.foundation.configuration.ConfigurationFactory
+import com.cisco.oss.foundation.flowcontext.FlowContextFactory
 import com.cisco.oss.foundation.http.apache.ApacheHttpClientFactory
 import com.cisco.oss.foundation.http.{HttpMethod, HttpRequest, HttpResponse}
 import com.cisco.oss.foundation.orchestration.scope.dblayer.SCOPeDB
@@ -32,7 +33,7 @@ import de.flapdoodle.embed.mongo.{MongodExecutable, MongodStarter}
 import de.flapdoodle.embed.process.runtime.Network
 import net.liftweb.json._
 import org.junit.runner.RunWith
-import org.junit.{AfterClass, BeforeClass, Test}
+import org.junit.{AfterClass, BeforeClass, Ignore, Test}
 import org.scalatest.junit.{JUnitSuite, MustMatchersForJUnit, ShouldMatchersForJUnit}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
@@ -620,9 +621,10 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
   }
 
-  //   @Ignore
+  @Ignore
   @Test def testStartBentoService() {
 
+    FlowContextFactory.clearFlowcontext()
     //    val request = ProvisionRequest("bento", None)
 
     // Add foundation service info to system record.
@@ -745,7 +747,7 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
   @Test def testFoundationInstance() {
     // delete system in case it exists.
-
+    FlowContextFactory.createFlowContext()
     var request = HttpRequest.newBuilder()
       .uri("http://localhost:6401/systems/123456")
       .httpMethod(HttpMethod.DELETE)
@@ -756,7 +758,7 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
     request = HttpRequest.newBuilder()
       .uri("http://localhost:6401/systems/123456")
       .httpMethod(HttpMethod.POST)
-      .header("Accept", "test/plain")
+      .header("Accept", "text/plain")
       .entity("mypwd")
       .contentType("text/plain")
       .build()
@@ -832,7 +834,7 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
     val systems = json \\ "systemId"
     systems.children.length should be >= (2)
-
+    FlowContextFactory.clearFlowcontext()
   }
 
 
