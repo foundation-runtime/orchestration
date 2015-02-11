@@ -745,6 +745,7 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
     responseStatus should equal(202)
   }
 
+  @Ignore
   @Test def testFoundationInstance() {
     // delete system in case it exists.
     FlowContextFactory.createFlowContext()
