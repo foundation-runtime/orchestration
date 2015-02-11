@@ -32,7 +32,7 @@ import de.flapdoodle.embed.mongo.{MongodExecutable, MongodStarter}
 import de.flapdoodle.embed.process.runtime.Network
 import net.liftweb.json._
 import org.junit.runner.RunWith
-import org.junit.{Ignore, AfterClass, BeforeClass, Test}
+import org.junit.{AfterClass, BeforeClass, Test}
 import org.scalatest.junit.{JUnitSuite, MustMatchersForJUnit, ShouldMatchersForJUnit}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
@@ -52,9 +52,6 @@ object RestApiTest extends Slf4jLogger {
   val mongoPort = Network.getFreeServerPort
   ScopeUtils.configuration.setProperty("mongodb.port", mongoPort.toString)
   ScopeUtils.configuration.setProperty("mongodb.host", "localhost")
-  //  httpClient.setBindAddress(new InetSocketAddress(host,port))
-  //  val address = new Address(host, port)
-  //  httpClient.start()
   var mongodExecutable: MongodExecutable = null
   val productRepoUrl = "http://10.45.37.14/scope-products/test-1.0.0.0/"
 
@@ -83,8 +80,8 @@ object RestApiTest extends Slf4jLogger {
   }
 
   def createScopeDB() {
-    val mongodbConnetion = MongoConnection("localhost", mongoPort)
-    val scopedb = mongodbConnetion("scope")
+    val mongoConnection = MongoConnection("localhost", mongoPort)
+    val scopedb = mongoConnection("scope")
     val systemsdb = scopedb("systems")
     val productsdb = scopedb("products")
     val servicesdb = scopedb("services")
@@ -151,10 +148,7 @@ object RestApiTest extends Slf4jLogger {
 @ContextConfiguration(locations = Array("classpath*:/META-INF/scopeServerApplicationContext.xml"))
 class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUnit with MustMatchersForJUnit {
 
-  //implicit val formats = Serialization.formats(NoTypeHints)
-
   @Autowired var scopedb: SCOPeDB = _
-
 
   @Test def testCreateSystem() {
 
@@ -168,12 +162,6 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
     var response = RestApiTest.httpClient.executeDirect(request)
 
-    //    RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456")
-    //      .method(HttpMethod.DELETE)
-    //      .send()
-
-
-
     try {
 
       request = HttpRequest.newBuilder()
@@ -184,15 +172,7 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
         .contentType("text/plain")
         .build()
 
-      //      var response = RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456")
-      //        .method(HttpMethod.POST)
-      //        .header("Accept", "test/plain")
-      //        .content(new BytesContentProvider("mypwd" getBytes()), "text/plain")
-      //        .send()
-
       response = RestApiTest.httpClient.executeDirect(request)
-
-
 
       response getStatus() should equal(200)
 
@@ -207,15 +187,6 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
       response = RestApiTest.httpClient.executeDirect(request)
 
-
-      //      contentExchange.reset()
-      //      response = RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456")
-      //        .method(HttpMethod.POST)
-      //        .header("Accept", "test/plain")
-      //        .content(new BytesContentProvider("mypwd" getBytes()), "text/plain")
-      //        .send()
-
-      //      logInfo("response: {}", responseContent)
       response getStatus() should equal(409)
 
     } catch {
@@ -227,23 +198,11 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
       request = HttpRequest.newBuilder()
         .uri("http://localhost:6401/systems/123456")
         .httpMethod(HttpMethod.DELETE)
-        //        .header("Accept", "test/plain")
-        //        .entity("")
-        //        .contentType("text/plain")
         .build()
 
       response = RestApiTest.httpClient.executeDirect(request)
 
-      //      val response = RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456")
-      //        .method(HttpMethod.DELETE)
-      //        .send()
-      //      contentExchange.setMethod("delete")
-      //      RestApiTest.httpClient.send(contentExchange)
-      //      contentExchange.waitForDone()
-
-      //      val responseContent = contentExchange.getResponseContent()
       val responseStatus = response getStatus()
-      //      logInfo("response: {}", responseContent)
       responseStatus should equal(200)
     }
 
@@ -254,18 +213,12 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
     val request = HttpRequest.newBuilder()
       .uri("http://localhost:6401/systems/123456")
       .httpMethod(HttpMethod.POST)
-      //      .header("Accept", "test/plain")
-      //    .entity("")
       .contentType("text/plain")
       .build()
 
     val response = RestApiTest.httpClient.executeDirect(request)
 
-    //    val response = RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456")
-    //      .method(HttpMethod.POST)
-    //      .send()
-
-    println(response.getResponseAsString)
+    logInfo(response.getResponseAsString)
     response.getStatus() should equal(400)
   }
 
@@ -280,7 +233,7 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
       productRepoUrl
     )
     val instanceId = "wawaw"
-    scopedb.createInstance(Instance(instanceId, "12345", "update", None, None, product, Map(), List(), None, Map("private"-> "aaa")))
+    scopedb.createInstance(Instance(instanceId, "12345", "update", None, None, product, Map(), List(), None, Map("private" -> "aaa")))
     scopedb.createSystem(System("12345", "update", None))
 
 
@@ -305,18 +258,9 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
     var request = HttpRequest.newBuilder()
       .uri("http://localhost:6401/systems/123456")
       .httpMethod(HttpMethod.DELETE)
-      //      .header("Accept", "test/plain")
-      //    .entity("")
-      //      .contentType("text/plain")
       .build()
 
     RestApiTest.httpClient.executeDirect(request)
-
-
-    // delete system in case it exists.
-    //    RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456")
-    //      .method(HttpMethod.DELETE)
-    //      .send()
 
     request = HttpRequest.newBuilder()
       .uri("http://localhost:6401/systems/123456")
@@ -328,15 +272,6 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
     var response: HttpResponse = RestApiTest.httpClient.executeDirect(request)
 
-
-    //    var response = RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456")
-    //      .method(HttpMethod.POST)
-    //      .header("Accept", "test/plain")
-    //      .content(new BytesContentProvider("mypwd" getBytes()), "text/plain")
-    //      .send()
-    //
-    //    response.getStatus() should equal(200)
-
     request = HttpRequest.newBuilder()
       .uri("http://localhost:6401/systems/123456/instances")
       .httpMethod(HttpMethod.GET)
@@ -344,14 +279,8 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
     response = RestApiTest.httpClient.executeDirect(request)
 
-
-    //    response = RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456/instances")
-    //      .method(HttpMethod.GET)
-    //      .send()
-
     response.getStatus() should equal(200)
     logInfo("response: {}", response.getResponseAsString)
-
 
     request = HttpRequest.newBuilder()
       .uri("http://localhost:6401/systems/123456")
@@ -360,61 +289,43 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
     response = RestApiTest.httpClient.executeDirect(request)
 
-    //    response = RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456")
-    //      .method(HttpMethod.DELETE)
-    //      .send()
-
     response.getStatus() should equal(200)
   }
 
   @Test def getInstanceInfo() {
 
-    var request = HttpRequest.newBuilder()
+    val request = HttpRequest.newBuilder()
       .uri("http://localhost:6401/systems/123456/instances/456")
       .httpMethod(HttpMethod.GET)
       .build()
 
-    var response = RestApiTest.httpClient.executeDirect(request)
+    val response = RestApiTest.httpClient.executeDirect(request)
 
-
-    //    var response = RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456/instances/4567")
-    //      .method(HttpMethod.GET)
-    //      .send()
-
+    logInfo("response: {}", response.getResponseAsString)
     response.getStatus() should equal(404)
-
   }
 
   @Test def testDeleteSystem() {
 
-    var request = HttpRequest.newBuilder()
+    val request = HttpRequest.newBuilder()
       .uri("http://localhost:6401/systems/123456")
       .httpMethod(HttpMethod.DELETE)
       .build()
 
-    var response = RestApiTest.httpClient.executeDirect(request)
+    val response = RestApiTest.httpClient.executeDirect(request)
 
-    //    val response = RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456")
-    //      .method(HttpMethod.DELETE)
-    //      .send()
-
-    response.getStatus() should equal(404)
     logInfo("response: {}", response.getResponseAsString)
+    response.getStatus() should equal(404)
   }
 
   @Test def testGetProducts() {
 
-    var request = HttpRequest.newBuilder()
+    val request = HttpRequest.newBuilder()
       .uri("http://localhost:6401/products")
       .httpMethod(HttpMethod.GET)
       .build()
 
-    var response = RestApiTest.httpClient.executeDirect(request)
-
-    //    var response = RestApiTest.httpClient.newRequest("http://localhost:6401/products")
-    //      .method(HttpMethod.GET)
-    //      .send()
-
+    val response = RestApiTest.httpClient.executeDirect(request)
 
     val responseContent = response.getResponseAsString
     logInfo("response: {}", responseContent)
@@ -427,51 +338,33 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
   @Test def testGetProduct() {
 
-    var request = HttpRequest.newBuilder()
+    val request = HttpRequest.newBuilder()
       .uri("http://localhost:6401/products/IM-3.48.0.0/")
       .httpMethod(HttpMethod.GET)
       .build()
 
-    var response = RestApiTest.httpClient.executeDirect(request)
-
-    //    var response = RestApiTest.httpClient.newRequest("http://localhost:6401/products/IM-3.48.0.0/")
-    //      .method(HttpMethod.GET)
-    //      .send()
-
+    val response = RestApiTest.httpClient.executeDirect(request)
 
     val responseContent = response.getResponseAsString
     logInfo("response: {}", responseContent)
     val responseStatus = response.getStatus()
     responseStatus should equal(200)
-    //    		val json = parse(responseContent)
-    //		
-    //		val products = json \\ "name"
-    //		products.children.length should equal (2)
-
   }
 
   @Test def testGetProductAndFail() {
 
-    var request = HttpRequest.newBuilder()
+    val request = HttpRequest.newBuilder()
       .uri("http://localhost:6401/products/IDONTEXIST-3.48.0.0/")
       .httpMethod(HttpMethod.GET)
       .build()
 
-    var response = RestApiTest.httpClient.executeDirect(request)
-
-    //    var response = RestApiTest.httpClient.newRequest("http://localhost:6401/products/IDONTEXIST-3.48.0.0/")
-    //      .method(HttpMethod.GET)
-    //      .send()
-
+    val response = RestApiTest.httpClient.executeDirect(request)
 
     val responseStatus = response.getStatus()
     responseStatus should equal(404)
-
   }
 
   @Test def testCreateDeleteProduct() {
-    // Uses ScalaTest matchers
-
     {
       val request = HttpRequest.newBuilder()
         .uri("http://localhost:6401/products/TestProduct-1.2.3.4/")
@@ -492,56 +385,40 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
     val body = ScopeUtils.mapper.writeValueAsString(product)
 
     {
-
-      var request = HttpRequest.newBuilder()
+      val request = HttpRequest.newBuilder()
         .uri("http://localhost:6401/products/TestProduct-1.2.3.4/")
         .httpMethod(HttpMethod.PUT)
         .entity(body)
         .contentType("application/json")
         .build()
 
-      var response = RestApiTest.httpClient.executeDirect(request)
-
-      //      val response = RestApiTest.httpClient.newRequest("http://localhost:6401/products/TestProduct-1.2.3.4/")
-      //        .method(HttpMethod.PUT)
-      //        .content(new BytesContentProvider(body getBytes()), "application/json")
-      //        .send()
+      val response = RestApiTest.httpClient.executeDirect(request)
 
       val responseStatus = response.getStatus()
       responseStatus should equal(201)
     }
 
     {
-
-      var request = HttpRequest.newBuilder()
+      val request = HttpRequest.newBuilder()
         .uri("http://localhost:6401/products/TestProduct-1.2.3.4/")
         .httpMethod(HttpMethod.PUT)
         .entity(body)
         .contentType("application/json")
         .build()
 
-      var response = RestApiTest.httpClient.executeDirect(request)
-
-      //      val response = RestApiTest.httpClient.newRequest("http://localhost:6401/products/TestProduct-1.2.3.4/")
-      //        .method(HttpMethod.PUT)
-      //        .content(new BytesContentProvider(body getBytes()), "application/json")
-      //        .send()
+      val response = RestApiTest.httpClient.executeDirect(request)
 
       val responseStatus = response.getStatus()
       responseStatus should equal(409)
     }
 
     {
-      var request = HttpRequest.newBuilder()
+      val request = HttpRequest.newBuilder()
         .uri("http://localhost:6401/products/TestProduct-1.2.3.4/")
         .httpMethod(HttpMethod.GET)
         .build()
 
-      var response = RestApiTest.httpClient.executeDirect(request)
-
-      //      val response = RestApiTest.httpClient.newRequest("http://localhost:6401/products/TestProduct-1.2.3.4/")
-      //        .method(HttpMethod.GET)
-      //        .send()
+      val response = RestApiTest.httpClient.executeDirect(request)
 
       val responseStatus = response.getStatus()
       responseStatus should equal(200)
@@ -553,11 +430,7 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
         .httpMethod(HttpMethod.DELETE)
         .build()
 
-      var response = RestApiTest.httpClient.executeDirect(request)
-
-      //      val response = RestApiTest.httpClient.newRequest("http://localhost:6401/products/TestProduct-1.2.3.4/")
-      //        .method(HttpMethod.DELETE)
-      //        .send()
+      val response = RestApiTest.httpClient.executeDirect(request)
 
       val responseStatus = response.getStatus()
       responseStatus should equal(200)
@@ -572,10 +445,6 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
       val response = RestApiTest.httpClient.executeDirect(request)
 
-      //      val response = RestApiTest.httpClient.newRequest("http://localhost:6401/products/TestProduct-1.2.3.4/")
-      //        .method(HttpMethod.GET)
-      //        .send()
-
       val responseStatus = response.getStatus()
       responseStatus should equal(404)
     }
@@ -583,7 +452,7 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
   }
 
 
-  @Test def testInstantiateProdcut() {
+  @Test def testInstantiateProduct() {
 
     var request = HttpRequest.newBuilder()
       .uri("http://localhost:6401/systems/123456")
@@ -591,11 +460,6 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
       .build()
 
     var response: HttpResponse = RestApiTest.httpClient.executeDirect(request)
-
-    //    RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456")
-    //      .method(HttpMethod.DELETE)
-    //      .send()
-
 
     //create new system
     request = HttpRequest.newBuilder()
@@ -607,13 +471,6 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
       .build()
 
     response = RestApiTest.httpClient.executeDirect(request)
-
-    //    var response = RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456")
-    //      .method(HttpMethod.POST)
-    //      .header("Accept", "test/plain")
-    //      .content(new BytesContentProvider("mypwd" getBytes()), "text/plain")
-    //      .send()
-
 
     response.getStatus() should equal(200)
 
@@ -646,14 +503,6 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
     response = RestApiTest.httpClient.executeDirect(request)
 
-
-    //    response = RestApiTest.httpClient.newRequest("http://localhost:6401/products/IM-3.48.0.0/instantiate/")
-    //      .method(HttpMethod.POST)
-    //      //      .header("Accept", "application/json")
-    //      //      .header("Content-Type", "application/json")
-    //      .content(new BytesContentProvider(body getBytes()), "application/json")
-    //      .send()
-
     var responseContent = response.getResponseAsString
     logInfo("response: {}", responseContent)
     response.getStatus() should equal(200)
@@ -671,10 +520,6 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
       .build()
 
     response = RestApiTest.httpClient.executeDirect(request)
-
-    //    response = RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456/instances/" + instanceId1)
-    //      .method(HttpMethod.GET)
-    //      .send()
 
     responseContent = response.getResponseAsString
     response.getStatus() should equal(200)
@@ -697,15 +542,6 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
     response = RestApiTest.httpClient.executeDirect(request)
 
-    //    response = RestApiTest.httpClient.newRequest("http://localhost:6401/products/IM-3.48.0.0/instantiate/")
-    //      .method(HttpMethod.POST)
-    //      .header("Accept", "application/json")
-    //      .header("Content-Type", "application/json")
-    //      .content(new BytesContentProvider(body getBytes()), "application/json")
-    //      .send()
-
-
-
     responseContent = response.getResponseAsString
     response.getStatus() should equal(200)
     logInfo("response: {}", responseContent)
@@ -717,18 +553,12 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
 
     //get all system instances
-
     request = HttpRequest.newBuilder()
       .uri("http://localhost:6401/systems/123456/instances")
       .httpMethod(HttpMethod.GET)
       .build()
 
     response = RestApiTest.httpClient.executeDirect(request)
-
-    //    response = RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456/instances")
-    //      .method(HttpMethod.GET)
-    //      .send()
-
 
     responseContent = response.getResponseAsString
     response.getStatus() should equal(200)
@@ -747,18 +577,10 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
     response = RestApiTest.httpClient.executeDirect(request)
 
-    //    response = RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456/instances/" + instanceId1)
-    //      .method(HttpMethod.DELETE)
-    //      .send()
-
-
     responseContent = response.getResponseAsString
     response.getStatus() should equal(200)
-    //    logInfo("response for get instance info: {}", responseContent)
-
 
     //get all instances
-
     request = HttpRequest.newBuilder()
       .uri("http://localhost:6401/systems/123456/instances")
       .httpMethod(HttpMethod.GET)
@@ -766,9 +588,6 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
     response = RestApiTest.httpClient.executeDirect(request)
 
-    //    response = RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456/instances")
-    //      .method(HttpMethod.GET)
-    //      .send()
     responseContent = response.getResponseAsString
     response.getStatus() should equal(200)
     logInfo("response all instances: {}", responseContent)
@@ -784,10 +603,6 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
     response = RestApiTest.httpClient.executeDirect(request)
 
-    //    response = RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456/instances/" + instanceId2)
-    //      .method(HttpMethod.DELETE)
-    //      .send()
-
     response.getStatus() should equal(200)
     logInfo("response: {}", response.getResponseAsString)
 
@@ -799,9 +614,6 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
     response = RestApiTest.httpClient.executeDirect(request)
 
-    //    response = RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456")
-    //      .method(HttpMethod.DELETE)
-    //      .send()
 
     responseContent = response.getResponseAsString
     response.getStatus() should equal(200)
@@ -836,12 +648,6 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
     var response: HttpResponse = RestApiTest.httpClient.executeDirect(request)
 
-    //    var response = RestApiTest.httpClient.newRequest("http://localhost:6401/1283/service")
-    //      .method(HttpMethod.POST)
-    //      .content(new BytesContentProvider((ScopeUtils.mapper.writeValueAsString(request)) getBytes()), "application/json")
-    //      .send()
-
-
     var responseStatus = response.getStatus()
 
     responseStatus should equal(202)
@@ -858,18 +664,13 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
     response = RestApiTest.httpClient.executeDirect(request)
 
-    //    response = RestApiTest.httpClient.newRequest(endPoint)
-    //      .method(HttpMethod.GET)
-    //      .followRedirects(false)
-    //      .send()
-
     responseStatus = response.getStatus()
-    println("content response: " + response.getResponseAsString)
+    logInfo("content response: " + response.getResponseAsString)
     responseStatus should equal(303)
 
     location = response.getHeaders.get("Location").toList.mkString
     endPoint = location.replace(":8086", "")
-    println("location: " + endPoint)
+    logInfo("location: " + endPoint)
 
     request = HttpRequest.newBuilder()
       .uri(endPoint + "/control/status")
@@ -877,11 +678,6 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
       .build()
 
     response = RestApiTest.httpClient.executeDirect(request)
-
-    //    response = RestApiTest.httpClient.newRequest(endPoint + "/control/status")
-    //      .method(HttpMethod.GET)
-    //      .followRedirects(false)
-    //      .send()
 
     responseStatus = response.getStatus()
     responseStatus should equal(200)
@@ -898,12 +694,6 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
     response = RestApiTest.httpClient.executeDirect(request)
 
-
-    //    response = RestApiTest.httpClient.newRequest(endPoint + "/control/status")
-    //      .method(HttpMethod.PUT)
-    //      .content(new BytesContentProvider((ScopeUtils.mapper.writeValueAsString(reqCont)) getBytes()), "application/json")
-    //      .send()
-
     responseStatus = response.getStatus()
 
     responseStatus should equal(200)
@@ -916,11 +706,6 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
       .build()
 
     response = RestApiTest.httpClient.executeDirect(request)
-
-    //    response = RestApiTest.httpClient.newRequest(endPoint + "/control/status")
-    //      .method(HttpMethod.GET)
-    //      .followRedirects(false)
-    //      .send()
 
     responseStatus = response.getStatus()
     responseStatus should equal(200)
@@ -940,11 +725,6 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
     response = RestApiTest.httpClient.executeDirect(request)
 
-    //    response = RestApiTest.httpClient.newRequest(endPoint + "/control/status")
-    //      .method(HttpMethod.PUT)
-    //      .content(new BytesContentProvider((ScopeUtils.mapper.writeValueAsString(reqCont)) getBytes()), "application/json")
-    //      .send()
-
     responseStatus = response.getStatus()
 
     responseStatus should equal(501)
@@ -953,17 +733,10 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
     request = HttpRequest.newBuilder()
       .uri(endPoint)
       .httpMethod(HttpMethod.DELETE)
-      //.entity(ScopeUtils.mapper.writeValueAsString(ProvisionRequest("bento", None)))
       .contentType("application/json")
       .build()
 
     response = RestApiTest.httpClient.executeDirect(request)
-
-
-    //    response = RestApiTest.httpClient.newRequest(endPoint)
-    //      .method(HttpMethod.DELETE)
-    //      .content(new BytesContentProvider((ScopeUtils.mapper.writeValueAsString(request)) getBytes()), "application/json")
-    //      .send()
 
     responseStatus = response.getStatus()
 
@@ -980,10 +753,6 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
     RestApiTest.httpClient.executeDirect(request)
 
-    //    RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456")
-    //      .method(HttpMethod.DELETE)
-    //      .send()
-
     request = HttpRequest.newBuilder()
       .uri("http://localhost:6401/systems/123456")
       .httpMethod(HttpMethod.POST)
@@ -994,17 +763,11 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
     var response = RestApiTest.httpClient.executeDirect(request)
 
-    //    var response = RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456")
-    //      .method(HttpMethod.POST)
-    //      .header("Accept", "test/plain")
-    //      .content(new BytesContentProvider("mypwd" getBytes()), "text/plain")
-    //      .send()
-
     response.getStatus() should equal(200)
 
     //instantiate foundation
-    var product = Product("ScopeFoundation-1.50.0.0", "ScopeFoundation", "1.50.0.0", List[ProductOption](), RestApiTest.productRepoUrl)
-    var body = ScopeUtils.mapper.writeValueAsString(Instance(null, "123456", "myInstance_123", Some("completed"), None, product, Map(), List[AccessPoint](), None))
+    val product = Product("ScopeFoundation-1.50.0.0", "ScopeFoundation", "1.50.0.0", List[ProductOption](), RestApiTest.productRepoUrl)
+    val body = ScopeUtils.mapper.writeValueAsString(Instance(null, "123456", "myInstance_123", Some("completed"), None, product, Map(), List[AccessPoint](), None))
     println("body is: " + body)
 
 
@@ -1016,12 +779,6 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
       .build()
 
     response = RestApiTest.httpClient.executeDirect(request)
-
-    //    response = RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456/foundation")
-    //      .method(HttpMethod.PUT)
-    //      .content(new BytesContentProvider(body getBytes()), "application/json")
-    //      .send()
-
 
     var responseContent = response.getResponseAsString
     logInfo("response: {}", responseContent)
@@ -1040,21 +797,12 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
     response = RestApiTest.httpClient.executeDirect(request)
 
-    //    response = RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456/instances/" + instanceId1)
-    //      .method(HttpMethod.GET)
-    //      .send()
-
-
     request = HttpRequest.newBuilder()
       .uri("http://localhost:6401/systems/123456/")
       .httpMethod(HttpMethod.GET)
       .build()
 
     response = RestApiTest.httpClient.executeDirect(request)
-
-    //     response = RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456/")
-    //      .method(HttpMethod.GET)
-    //      .send()
 
     responseContent = response.getResponseAsString
     response.getStatus() should equal(200)
@@ -1066,25 +814,17 @@ class RestApiTest extends Slf4jLogger with JUnitSuite with ShouldMatchersForJUni
 
     response = RestApiTest.httpClient.executeDirect(request)
 
-    //    response = RestApiTest.httpClient.newRequest("http://localhost:6401/systems/123456")
-    //      .method(HttpMethod.DELETE)
-    //      .send()
-
     response.getStatus() should equal(200)
   }
 
   @Test def testGetSystems() {
 
-    var request = HttpRequest.newBuilder()
+    val request = HttpRequest.newBuilder()
       .uri("http://localhost:6401/systems")
       .httpMethod(HttpMethod.GET)
       .build()
 
-    var response = RestApiTest.httpClient.executeDirect(request)
-
-    //    var response = RestApiTest.httpClient.newRequest("http://localhost:6401/systems")
-    //      .method(HttpMethod.GET)
-    //      .send()
+    val response = RestApiTest.httpClient.executeDirect(request)
 
     val responseContent = response.getResponseAsString
     logInfo("response: {}", responseContent)

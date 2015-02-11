@@ -19,7 +19,6 @@ package com.cisco.oss.foundation.orchestration.scope.scripting
 import com.cisco.oss.foundation.orchestration.scope.utils.Slf4jLogger
 import com.googlecode.scalascriptengine.{ScalaScriptEngine, RefreshAsynchronously}
 import java.io.File
-import com.googlecode.scalascriptengine.CompilationStatus.Complete
 import com.googlecode.scalascriptengine.CompilationStatus.{Failed, Complete}
 import org.apache.commons.io.FileUtils
 import scala.collection.mutable.HashSet
